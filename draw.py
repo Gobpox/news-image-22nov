@@ -449,141 +449,181 @@ def _star(d, cx, cy, r, fill):
 
 
 def flag(d, code, x, y, w=34, h=22):
-    """Solid miniature flags (v3.6): every field painted in saturated
-    official colours (never the cream paper showing through), correct
-    key elements, all proportions relative to w/h so the same drawing
-    serves the 34x22 hero chips and the 28x18 card chips."""
+    """Solid miniature flags: every field painted in saturated
+    official colours (never the cream paper showing through), with
+    the key elements of each design, all proportions relative to
+    w/h so one drawing serves every chip size on the page. Most
+    flags are data: FLAG_STEPS under this function lists the shapes
+    to paint, in order, and _flag_steps paints them. A code with no
+    entry gets the globe marker."""
     WHT = (255, 255, 255)
     d.rectangle([x, y, x + w, y + h], fill=WHT)
-    if code in STRIPE_FLAGS:
-        # Plain banded flags come from the table under the function.
-        # Each entry is one painted rectangle, in painting order, as
-        # (axis, start, parts, stop, colour): along its axis the rect
-        # runs from start/parts to stop/parts of the flag's extent,
-        # exactly the integer arithmetic the hand-drawn branches used.
-        for axis, start, parts, stop, col in STRIPE_FLAGS[code]:
-            if axis == "h":
-                d.rectangle([x, y + start * h // parts, x + w,
-                             y + stop * h // parts], fill=col)
-            else:
-                d.rectangle([x + start * w // parts, y,
-                             x + stop * w // parts, y + h], fill=col)
+    if code in FLAG_STEPS:
+        _flag_steps(d, code, x, y, w, h)
         d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
         return
-    if code == "SA":  # Saudi Arabia: green, white shahada band + sword
-        d.rectangle([x, y, x + w, y + h], fill=(0, 108, 53))
-        d.rectangle([x + w * 0.16, y + h * 0.30, x + w * 0.84, y + h * 0.52],
-                    fill=WHT)
-        d.line([x + w * 0.20, y + h * 0.70, x + w * 0.80, y + h * 0.70],
-               fill=WHT, width=max(2, h // 8))
-        d.line([x + w * 0.74, y + h * 0.62, x + w * 0.74, y + h * 0.70],
-               fill=WHT, width=2)
-    elif code == "TR":  # Turkiye: red, white crescent + star
-        d.rectangle([x, y, x + w, y + h], fill=(227, 10, 23))
-        cx, cy, r = x + w * 0.40, y + h * 0.5, h * 0.30
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHT)
-        r2 = r * 0.82
-        d.ellipse([cx + r * 0.28 - r2, cy - r2, cx + r * 0.28 + r2, cy + r2],
-                  fill=(227, 10, 23))
-        _star(d, x + w * 0.70, cy, h * 0.17, WHT)
-    elif code == "BH":  # Bahrain: red field, white serrated hoist band
-        d.rectangle([x, y, x + w, y + h], fill=(206, 17, 38))
-        pts = [(x, y)]
-        for i in range(5):
-            pts.append((x + w * 0.30, y + h * (0.1 + i * 0.2)))
-            pts.append((x, y + h * (0.2 + i * 0.2)))
-        pts.append((x, y + h))
-        d.polygon(pts, fill=WHT)
-    elif code == "LY":  # Libya: red-black-green, white crescent + star
-        d.rectangle([x, y, x + w, y + h // 4], fill=(206, 17, 38))
-        d.rectangle([x, y + h // 4, x + w, y + 3 * h // 4], fill=(0, 0, 0))
-        d.rectangle([x, y + 3 * h // 4, x + w, y + h], fill=(0, 122, 61))
-        cx, cy, r = x + w * 0.48, y + h * 0.5, h * 0.20
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHT)
-        r2 = r * 0.85
-        d.ellipse([cx + r * 0.3 - r2, cy - r2, cx + r * 0.3 + r2, cy + r2],
-                  fill=(0, 0, 0))
-        _star(d, x + w * 0.64, cy, h * 0.10, WHT)
-    elif code == "CN":  # China: red, gold stars
-        d.rectangle([x, y, x + w, y + h], fill=(222, 41, 16))
-        _star(d, x + w * 0.24, y + h * 0.28, h * 0.20, (255, 222, 0))
-        for sx, sy in ((0.50, 0.14), (0.60, 0.30), (0.60, 0.52), (0.48, 0.62)):
-            _star(d, x + w * sx, y + h * sy, h * 0.08, (255, 222, 0))
-    elif code == "DK":  # Denmark: red, white Nordic cross
-        d.rectangle([x, y, x + w, y + h], fill=(200, 16, 46))
-        d.rectangle([x + w * 0.30, y, x + w * 0.43, y + h], fill=WHT)
-        d.rectangle([x, y + h * 0.39, x + w, y + h * 0.61], fill=WHT)
-    elif code == "FI":  # Finland: white, blue Nordic cross
-        d.rectangle([x + w * 0.28, y, x + w * 0.44, y + h], fill=(0, 47, 108))
-        d.rectangle([x, y + h * 0.36, x + w, y + h * 0.64], fill=(0, 47, 108))
-    elif code == "PS":  # Palestine: black-white-green, red hoist triangle
-        d.rectangle([x, y, x + w, y + h // 3], fill=(0, 0, 0))
-        d.rectangle([x, y + 2 * h // 3, x + w, y + h], fill=(0, 122, 61))
-        d.polygon([(x, y), (x + w * 0.42, y + h // 2), (x, y + h)],
-                  fill=(238, 28, 37))
-    elif code == "IQ":  # Iraq: red-white-black, green takbir mark
-        d.rectangle([x, y, x + w, y + h // 3], fill=(206, 17, 38))
-        d.rectangle([x, y + 2 * h // 3, x + w, y + h], fill=(0, 0, 0))
-        d.rectangle([x + w * 0.40, y + h * 0.42, x + w * 0.60, y + h * 0.58],
-                    fill=(0, 122, 61))
-    elif code == "OM":  # Oman: red hoist, white-red-green stripes
-        d.rectangle([x + w * 0.30, y + h // 3, x + w, y + 2 * h // 3],
-                    fill=(239, 51, 64))
-        d.rectangle([x + w * 0.30, y + 2 * h // 3, x + w, y + h],
-                    fill=(0, 150, 57))
-        d.rectangle([x, y, x + w * 0.30, y + h], fill=(239, 51, 64))
-        d.ellipse([x + w * 0.10, y + h * 0.12, x + w * 0.20, y + h * 0.24],
-                  fill=WHT)
-    elif code == "CH":  # Switzerland: red field, white cross
-        d.rectangle([x, y, x + w, y + h], fill=(218, 41, 28))
-        d.rectangle([x + w * 0.42, y + h * 0.20, x + w * 0.58, y + h * 0.80],
-                    fill=WHT)
-        d.rectangle([x + w * 0.26, y + h * 0.38, x + w * 0.74, y + h * 0.62],
-                    fill=WHT)
-    elif code == "US":  # USA: 13 stripes, blue canton, star dots
-        sh = h / 13
-        for i in range(13):
-            if i % 2 == 0:
-                d.rectangle([x, y + i * sh, x + w, y + (i + 1) * sh + 1],
-                            fill=(178, 34, 52))
-        cw2, ch2 = w * 0.44, sh * 7
-        d.rectangle([x, y, x + cw2, y + ch2], fill=(60, 59, 110))
-        for r in range(3):
-            for c in range(4):
-                sx = x + cw2 * (c + 0.5) / 4
-                sy = y + ch2 * (r + 0.5) / 3
-                d.ellipse([sx - 1, sy - 1, sx + 1, sy + 1], fill=WHT)
-    elif code == "MX":  # Mexico: green-white-red, centre emblem
-        d.rectangle([x, y, x + w // 3, y + h], fill=(0, 104, 71))
-        d.rectangle([x + 2 * w // 3, y, x + w, y + h], fill=(206, 17, 38))
-        d.ellipse([x + w * 0.44, y + h * 0.38, x + w * 0.56, y + h * 0.62],
-                  fill=(196, 148, 38))
-    elif code == "EU":  # European Union: blue, circle of 12 gold stars
-        import math
-        d.rectangle([x, y, x + w, y + h], fill=(0, 51, 153))
-        cx, cy, rr = x + w / 2, y + h / 2, h * 0.32
-        for i in range(12):
-            ang = i * math.pi / 6
-            sx, sy = cx + rr * math.cos(ang), cy + rr * math.sin(ang)
-            _star(d, sx, sy, max(1.6, h * 0.075), (255, 204, 0))
     else:  # globe marker
         d.ellipse([x + 6, y + 1, x + 28, y + 21], fill=SKY, outline=INK)
     d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
 
 
-# Plain banded flags, drawn by the table path in flag(). Each flag is
-# a list of painted rectangles over the white base, in painting order;
-# a rectangle is (axis, start, parts, stop, colour), running along its
-# axis from start/parts to stop/parts of the flag's extent. Flags with
-# emblems, crosses or charges stay in the hand-drawn branches above.
-STRIPE_FLAGS = {
-    "UA": [("h", 1, 2, 2, (255, 213, 0)), ("h", 0, 2, 1, (0, 91, 187))],
-    "ID": [("h", 0, 2, 1, (206, 17, 38))],
-    "PL": [("h", 1, 2, 2, (220, 20, 60))],
-    "NG": [("v", 0, 3, 1, (0, 135, 81)), ("v", 2, 3, 3, (0, 135, 81))],
-    "PE": [("v", 0, 3, 1, (217, 0, 27)), ("v", 2, 3, 3, (217, 0, 27))],
-    "IT": [("v", 0, 3, 1, (0, 140, 69)), ("v", 2, 3, 3, (205, 33, 42))],
+# Flags as data. Each entry lists the shapes to paint over the white
+# base, in painting order; _flag_steps below paints them. The step
+# forms (fractions are of the flag's own width or height):
+#   ("field", colour)                    the whole field, one colour
+#   ("rect", fx0, fy0, fx1, fy1, colour)  a proportional rectangle
+#   ("oval", fx0, fy0, fx1, fy1, colour)  an ellipse inside that box
+#   ("band", fx0, i0, n, i1, colour)     a horizontal band: x from a
+#                                        fraction, y by integer parts
+#   ("hbands", i0, n, i1, colour)        a full-width horizontal band
+#   ("vbands", i0, n, i1, colour)        a full-height vertical band
+#   ("crescent", cx, cy, r, off, r2, colour, bite)
+#                                        a disc, then a shifted bite
+#                                        disc in the field colour
+#   ("star", fx, fy, r, colour)          a five-pointed star
+#   ("poly", [(fx, fy), ...], colour)    a polygon by fractions
+#   ("line", fx0, fy0, fx1, fy1, colour, width)
+#                                        width 0 means max(2, h // 8)
+#   ("serrated", fx, colour)             a serrated hoist band
+#   ("ring", cx, cy, r, n, sr, colour)   a ring of small stars
+#   ("us", red, navy)                    the Stars and Stripes routine
+FLAG_STEPS = {
+    "UA": [("hbands", 1, 2, 2, (255, 213, 0)),
+           ("hbands", 0, 2, 1, (0, 91, 187))],
+    "ID": [("hbands", 0, 2, 1, (206, 17, 38))],
+    "PL": [("hbands", 1, 2, 2, (220, 20, 60))],
+    "NG": [("vbands", 0, 3, 1, (0, 135, 81)),
+           ("vbands", 2, 3, 3, (0, 135, 81))],
+    "PE": [("vbands", 0, 3, 1, (217, 0, 27)),
+           ("vbands", 2, 3, 3, (217, 0, 27))],
+    "IT": [("vbands", 0, 3, 1, (0, 140, 69)),
+           ("vbands", 2, 3, 3, (205, 33, 42))],
+    "SA": [("field", (0, 108, 53)),
+           ("rect", 0.16, 0.30, 0.84, 0.52, (255, 255, 255)),
+           ("line", 0.20, 0.70, 0.80, 0.70, (255, 255, 255), 0),
+           ("line", 0.74, 0.62, 0.74, 0.70, (255, 255, 255), 2)],
+    "TR": [("field", (227, 10, 23)),
+           ("crescent", 0.40, 0.5, 0.30, 0.28, 0.82,
+            (255, 255, 255), (227, 10, 23)),
+           ("star", 0.70, 0.5, 0.17, (255, 255, 255))],
+    "BH": [("field", (206, 17, 38)),
+           ("serrated", 0.30, (255, 255, 255))],
+    "LY": [("hbands", 0, 4, 1, (206, 17, 38)),
+           ("hbands", 1, 4, 3, (0, 0, 0)),
+           ("hbands", 3, 4, 4, (0, 122, 61)),
+           ("crescent", 0.48, 0.5, 0.20, 0.3, 0.85,
+            (255, 255, 255), (0, 0, 0)),
+           ("star", 0.64, 0.5, 0.10, (255, 255, 255))],
+    "CN": [("field", (222, 41, 16)),
+           ("star", 0.24, 0.28, 0.20, (255, 222, 0)),
+           ("star", 0.50, 0.14, 0.08, (255, 222, 0)),
+           ("star", 0.60, 0.30, 0.08, (255, 222, 0)),
+           ("star", 0.60, 0.52, 0.08, (255, 222, 0)),
+           ("star", 0.48, 0.62, 0.08, (255, 222, 0))],
+    "DK": [("field", (200, 16, 46)),
+           ("rect", 0.30, 0.0, 0.43, 1.0, (255, 255, 255)),
+           ("rect", 0.0, 0.39, 1.0, 0.61, (255, 255, 255))],
+    "FI": [("rect", 0.28, 0.0, 0.44, 1.0, (0, 47, 108)),
+           ("rect", 0.0, 0.36, 1.0, 0.64, (0, 47, 108))],
+    "PS": [("hbands", 0, 3, 1, (0, 0, 0)),
+           ("hbands", 2, 3, 3, (0, 122, 61)),
+           ("poly", [(0.0, 0.0), (0.42, 0.5), (0.0, 1.0)],
+            (238, 28, 37))],
+    "IQ": [("hbands", 0, 3, 1, (206, 17, 38)),
+           ("hbands", 2, 3, 3, (0, 0, 0)),
+           ("rect", 0.40, 0.42, 0.60, 0.58, (0, 122, 61))],
+    "OM": [("band", 0.30, 1, 3, 2, (239, 51, 64)),
+           ("band", 0.30, 2, 3, 3, (0, 150, 57)),
+           ("rect", 0.0, 0.0, 0.30, 1.0, (239, 51, 64)),
+           ("oval", 0.10, 0.12, 0.20, 0.24, (255, 255, 255))],
+    "CH": [("field", (218, 41, 28)),
+           ("rect", 0.42, 0.20, 0.58, 0.80, (255, 255, 255)),
+           ("rect", 0.26, 0.38, 0.74, 0.62, (255, 255, 255))],
+    "MX": [("vbands", 0, 3, 1, (0, 104, 71)),
+           ("vbands", 2, 3, 3, (206, 17, 38)),
+           ("oval", 0.44, 0.38, 0.56, 0.62, (196, 148, 38))],
+    "EU": [("field", (0, 51, 153)),
+           ("ring", 0.5, 0.5, 0.32, 12, 0.075, (255, 204, 0))],
+    "US": [("us", (178, 34, 52), (60, 59, 110))],
 }
+
+
+def _flag_steps(d, code, x, y, w, h):
+    """Paint one table flag: the steps of FLAG_STEPS[code], in order,
+    with the same arithmetic the hand-drawn branches used to use."""
+    WHT = (255, 255, 255)
+    for step in FLAG_STEPS[code]:
+        kind = step[0]
+        if kind == "field":
+            d.rectangle([x, y, x + w, y + h], fill=step[1])
+        elif kind == "rect":
+            _, a, b, c, e, col = step
+            d.rectangle([x + a * w, y + b * h, x + c * w, y + e * h],
+                        fill=col)
+        elif kind == "oval":
+            _, a, b, c, e, col = step
+            d.ellipse([x + a * w, y + b * h, x + c * w, y + e * h],
+                      fill=col)
+        elif kind == "band":
+            _, a, i0, n, i1, col = step
+            d.rectangle([x + a * w, y + i0 * h // n, x + w,
+                         y + i1 * h // n], fill=col)
+        elif kind == "hbands":
+            _, i0, n, i1, col = step
+            d.rectangle([x, y + i0 * h // n, x + w, y + i1 * h // n],
+                        fill=col)
+        elif kind == "vbands":
+            _, i0, n, i1, col = step
+            d.rectangle([x + i0 * w // n, y, x + i1 * w // n, y + h],
+                        fill=col)
+        elif kind == "crescent":
+            _, cxf, cyf, rf, off, r2f, col, bite = step
+            cx, cy, r = x + w * cxf, y + h * cyf, h * rf
+            d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=col)
+            r2 = r * r2f
+            d.ellipse([cx + r * off - r2, cy - r2, cx + r * off + r2,
+                       cy + r2], fill=bite)
+        elif kind == "star":
+            _, fx, fy, rf, col = step
+            _star(d, x + w * fx, y + h * fy, h * rf, col)
+        elif kind == "poly":
+            _, pts_f, col = step
+            d.polygon([(x + fx * w, y + fy * h) for fx, fy in pts_f],
+                      fill=col)
+        elif kind == "line":
+            _, a, b, c, e, col, wd = step
+            d.line([x + a * w, y + b * h, x + c * w, y + e * h],
+                   fill=col, width=max(2, h // 8) if wd == 0 else wd)
+        elif kind == "serrated":
+            _, fx, col = step
+            pts = [(x, y)]
+            for i in range(5):
+                pts.append((x + w * fx, y + h * (0.1 + i * 0.2)))
+                pts.append((x, y + h * (0.2 + i * 0.2)))
+            pts.append((x, y + h))
+            d.polygon(pts, fill=col)
+        elif kind == "ring":
+            _, cxf, cyf, rf, n, srf, col = step
+            import math
+            cx, cy, rr = x + w * cxf, y + h * cyf, h * rf
+            for i in range(n):
+                ang = i * math.pi / (n // 2)
+                _star(d, cx + rr * math.cos(ang),
+                      cy + rr * math.sin(ang), max(1.6, h * srf), col)
+        elif kind == "us":
+            _, red, navy = step
+            sh = h / 13
+            for i in range(13):
+                if i % 2 == 0:
+                    d.rectangle([x, y + i * sh, x + w,
+                                 y + (i + 1) * sh + 1], fill=red)
+            cw2, ch2 = w * 0.44, sh * 7
+            d.rectangle([x, y, x + cw2, y + ch2], fill=navy)
+            for r in range(3):
+                for c in range(4):
+                    sx = x + cw2 * (c + 0.5) / 4
+                    sy = y + ch2 * (r + 0.5) / 3
+                    d.ellipse([sx - 1, sy - 1, sx + 1, sy + 1], fill=WHT)
 
 
 CARD_DECK = [
