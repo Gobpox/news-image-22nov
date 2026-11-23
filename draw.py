@@ -79,7 +79,7 @@ CARDS = [
      "Istanbul protests the Sözcü TV seizure; a third media takeover "
      "in a year.", "AFP", "C"),
     ("CIKANDE", "ASI", "Disaster",
-     "Factory fire: 24 body bags, 29 missing",
+     "Factory fire: 24 body bags",
      "Search goes on after the candy-factory blaze; it resumes Monday.",
      "Reuters", "R"),
     ("BAYELSA", "AFR", "Disaster",
@@ -100,11 +100,11 @@ CARDS = [
      + FIG["bepicolombo_years"] + " years; orbiters split in December.",
      "ESA", "C"),
     ("LAS VEGAS", "AME", "Sport",
-     "Verstappen's 35-lead-change win",
+     "Verstappen wins in Las Vegas",
      "Holds off Norris by " + FIG["vegas_margin"] + "s in Las Vegas; "
      "Piastri third.", "F1", "C"),
     ("SHANGHAI", "ASI", "Economy",
-     "China eases margin rules to lift stocks",
+     "China eases margin rules",
      "Exchanges cut the minimum margin ratio to "
      + FIG["china_margin_new"] + " from " + FIG["china_margin_old"]
      + " on 30 November.", "Reuters", "C"),
@@ -554,19 +554,25 @@ def flag(d, code, x, y, w=34, h=22):
     d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
 
 
-CARD_INFO = [
-    FIG["ukraine_killed_sunday"] + " killed Sunday; Patriots asked",
-    FIG["poland_missiles"] + " Kh-101 missiles; council Mon",
-    FIG["istanbul_takeover"] + " takeover in a year",
-    FIG["cikande_body_bags"] + " body bags; " + FIG["cikande_missing"]
-    + " missing",
-    FIG["bayelsa_dead"] + " dead; " + FIG["bayelsa_rescued"] + " rescued",
-    FIG["westbank_villages"] + " villages attacked",
-    FIG["gaza_killed_sunday"] + " killed Sunday",
-    "Orbit burn after " + FIG["bepicolombo_years"] + " years' flight",
+CARD_DECK = [
+    FIG["ukraine_killed_sunday"] + " killed Sunday; Zelensky asks the US "
+    "for Patriots",
+    FIG["poland_missiles"] + " Kh-101 missiles; NATO council meets Monday",
+    "Protests at the S\u00f6zc\u00fc TV seizure; " + FIG["istanbul_takeover"]
+    + " takeover in a year",
+    FIG["cikande_body_bags"] + " body bags, " + FIG["cikande_missing"]
+    + " missing; search resumes Monday",
+    FIG["bayelsa_dead"] + " dead, " + FIG["bayelsa_rescued"]
+    + " rescued; search goes on",
+    FIG["westbank_villages"] + " villages attacked; Eisenkot calls it "
+    "terrorism",
+    "Medics say a strike kills " + FIG["gaza_killed_sunday"] + " on Sunday",
+    "In orbit 00:56 UTC after " + FIG["bepicolombo_years"]
+    + " years; split in Dec",
     FIG["vegas_lead_changes"] + " lead changes; " + FIG["vegas_margin"]
-    + "s margin",
-    FIG["china_margin_new"] + " margin from 30 Nov",
+    + "s over Norris",
+    "Margin ratio cut to " + FIG["china_margin_new"] + " from "
+    + FIG["china_margin_old"] + " on 30 Nov",
 ]
 
 CARD_FLAGS = ["UA", "PL", "TR", "ID", "NG", "PS", "PS", "EU", "US", "CN"]
@@ -861,50 +867,54 @@ def main():
         text_block(d, x + 8, yy + 7, deck, SANS(13), (52, 48, 42), hw - 16, 16,
                    max_lines=2, tag=f"herodeck{i}")
     # ---------------------------------------------------------- cards
+    # compact winners' format: 5 across x 2 rows; native-size scene at
+    # the left, number/flag/place/source column beside it, headline and
+    # a merged deck (deck + key-fact line fused) below. 2 rows x 176px
+    # = the old 4 rows x 88px, so nothing below this block moves.
     cy = hy + hh + 3
-    chh, chw = 88, hw
+    chh, chw = 182, (W - 32 - 32) // 5
     for i, card in enumerate(CARDS):
-        place, region, field, head, deck, src, sure = card
-        x = 16 + (i % 3) * (chw + 8)
-        yy0 = cy + (i // 3) * chh
-        effw = chw * 2 + 8 if i == len(CARDS) - 1 else chw
-        d.rectangle([x, yy0, x + effw, yy0 + chh], fill=(255, 253, 246),
+        place, region, field, head, deck0, src, sure = card
+        x = 16 + (i % 5) * (chw + 8)
+        yy0 = cy + (i // 5) * chh
+        d.rectangle([x, yy0, x + chw, yy0 + chh], fill=(255, 253, 246),
                     outline=(150, 142, 126), width=1)
         for seg, lab in (
-                ((x, yy0, x + effw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + effw, yy0 + chh), f"card{i+4} bottom"),
+                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
+                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
                 ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + effw, yy0, x + effw, yy0 + chh), f"card{i+4} right")):
+                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
             LINES.append((seg, lab))
         for seg, lab in (
-                ((x, yy0, x + effw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + effw, yy0 + chh), f"card{i+4} bottom"),
+                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
+                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
                 ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + effw, yy0, x + effw, yy0 + chh), f"card{i+4} right")):
+                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
             LINES.append((seg, lab))
         TAG[0] = ("card", i)
-        CARD_SCENES[i](d, x + 1, yy0 + 1, 110, chh - 2)
+        CARD_SCENES[i](d, x + 1, yy0 + 1, 110, chh // 2 - 2)
         TAG[0] = None
-        flag(d, CARD_FLAGS[i], x + 80, yy0 + 3, w=28, h=18)
-        FLAGS.append(((x + 80, yy0 + 3, x + 108, yy0 + 21), f"card{i+4} flag", ("card", i)))
+        flag(d, CARD_FLAGS[i], x + 156, yy0 + 3, w=28, h=18)
+        FLAGS.append(((x + 156, yy0 + 3, x + 184, yy0 + 21),
+                      f"card{i+4} flag", ("card", i)))
         tx = x + 116
-        d.rectangle([tx, yy0 + 6, tx + 16, yy0 + 20],
+        d.rectangle([tx, yy0 + 3, tx + 16, yy0 + 17],
                     fill=REGIONS[region][1])
-        t = str(i + 4)
-        d.text((tx + 8 - d.textlength(t, font=SANS_B(11)) / 2, yy0 + 7),
-               t, font=SANS_B(11), fill=(255, 255, 255))
-        d.text((tx + 22, yy0 + 5), place, font=SANS_B(10),
+        tnum = str(i + 4)
+        d.text((tx + 8 - d.textlength(tnum, font=SANS_B(11)) / 2, yy0 + 4),
+               tnum, font=SANS_B(11), fill=(255, 255, 255))
+        d.text((tx, yy0 + 23), place, font=SANS_B(10),
                fill=REGIONS[region][1])
-        mx = tx + 22 + d.textlength(place, font=SANS_B(10)) + 7
-        cmeta = f"{src} - {SURE_LABEL[sure]}"
-        d.text((mx, yy0 + 7), cmeta, font=SANS(9), fill=MUTE)
-        check_h(f"card{i+4} meta", cmeta, SANS(9), mx, x + effw - 6)
-        text_block(d, tx, yy0 + 16, head, SERIF(21), INK, effw - 123, 24,
+        check_h(f"card{i+4} place", place, SANS_B(10), tx, x + chw - 4)
+        d.text((tx, yy0 + 38), src, font=SANS(9), fill=MUTE)
+        d.text((tx, yy0 + 50), SURE_LABEL[sure], font=SANS(9), fill=MUTE)
+        check_h(f"card{i+4} src", src, SANS(9), tx, x + chw - 4)
+        text_block(d, x + 6, yy0 + 94, head, SERIF(20), INK, chw - 12, 23,
                    max_lines=2, tag=f"card{i}")
-        d.text((tx, yy0 + 70), CARD_INFO[i], font=SANS(13),
-               fill=(52, 48, 42))
-        check_h(f"card{i+4} info", CARD_INFO[i], SANS(13), tx, x + effw - 6)
-    by = cy + 3 * chh + chh + 2
+        text_block(d, x + 6, yy0 + 146, CARD_DECK[i], SANS(13),
+                   (52, 48, 42), chw - 12, 16, max_lines=2,
+                   tag=f"carddeck{i}")
+    by = cy + 2 * chh + 2
 
     # -------------------------------------- ALSO rail (left) + map (right)
     sec_y = by
@@ -916,7 +926,7 @@ def main():
         col = i % 2
         row = i // 2
         x = 16 + col * (colw + 8)
-        yy = sec_y + 19 + row * 18
+        yy = sec_y + 17 + row * 17
         d.rectangle([x, yy + 4, x + 7, yy + 11], fill=REGIONS[region][1])
         head = f"{i + 14} {place} — "
         d.text((x + 11, yy), head, font=SANS_B(14),
@@ -936,7 +946,7 @@ def main():
             SANS_B(12), mx0 + 8, mx1 - 8)
     check_h("also header", f"ALSO ON SUNDAY 22 NOVEMBER — {len(ALSO)} MORE",
             SANS_B(12), 22, 644 - 8)
-    map_y, map_h, map_w = sec_y + 22, 174, mx1 - mx0 - 16
+    map_y, map_h, map_w = sec_y + 22, 162, mx1 - mx0 - 16
     map_x = mx0 + 8
     d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h], fill=(16, 26, 44))
     cw, chh2 = map_w / 68, map_h / 30
@@ -962,7 +972,7 @@ def main():
     cap_y = map_y + map_h + 6
     d.text((mx0 + 8, cap_y), "11 MERCURY — OFF THE MAP, IN SPACE", font=SANS_B(11), fill=MUTE)
     check_h("map caption", "11 MERCURY — OFF THE MAP, IN SPACE", SANS_B(11), mx0 + 8, mx1 - 8)
-    by = sec_y + 218
+    by = sec_y + 206
 
     # ------------------------------------------------- numbers + bars
     d.line([16, by, W - 16, by], fill=INK, width=2)

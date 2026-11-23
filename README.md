@@ -22,11 +22,12 @@ deterministic bytes.
 
 Edition 21's top 10 were counted directly from their artefacts: 35-43
 stories each, built as pictured stories over a dense one-line "ALSO"
-rail. This entry locks exactly 35: 3 heroes + 10 cards pictured large
-(card headlines 21px; the last card spans two columns), plus a 22-line
-ALSO ON SUNDAY 22 NOVEMBER rail of numbered one-line briefs (place,
-key fact, source) at 14px, the brief-text floor. Density is
-quarantined in the rail; the pictured layer stays airy.
+rail. This entry locks exactly 35: 3 heroes + 10 cards in the winners'
+compact format (5 across x 2 rows: native-size scene, number/flag/
+place/source column, 20px headline, merged deck) plus a 22-line ALSO
+ON SUNDAY 22 NOVEMBER rail of numbered one-line briefs (place, key
+fact, source) at 14px, the brief-text floor. Density is quarantined
+in the rail; the pictured layer stays airy.
 
 ## License
 
