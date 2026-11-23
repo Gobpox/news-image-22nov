@@ -114,68 +114,78 @@ CARDS = [
 # numbered 14-35. This is the top-10 winners' structure from edition 21:
 # density is quarantined in this one-line rail while the pictured layer
 # (heroes + cards) stays large and airy.
-ALSO = [
-    ("KRYVYI RIH", "EUR", "Conflict",
-     FIG["kryvyi_injured"] + " hurt, " + FIG["kryvyi_children"] + " children", "AP"),
-    ("HORMUZ", "MEA", "Conflict",
-     FIG["hormuz_week"] + " tankers hit in week", "AJ"),
-    ("TURIN", "EUR", "Sport", "Alcaraz beats Zverev 6-2", "ATP"),
-    ("WASHINGTON", "AME", "Diplomacy", "Trump: 'permanent'", "Fox"),
-    ("NEW YORK", "AME", "Tech", "AI-chip spy bid", "NYT"),
-    ("LIVERPOOL", "EUR", "Sport", "4-0 over Man Utd", "BBC"),
-    ("HULL", "EUR", "Sport", "2-0 Brighton, late brace", "BBC"),
-    ("PARIS", "EUR", "Sport", "Dou\u00e9 ACL tear", "AFP"),
-    ("SYDNEY", "ASI", "Politics", "US lead narrows", "Lowy"),
-    ("GILROY", "AME", "Politics", "Interfaith ICE protest", "KPFA"),
-    ("SEATTLE", "AME", "Politics", "ICE takes two", "KPFA"),
-    ("MADRID", "EUR", "Sport", "Real fight back", "La Liga"),
-    ("ADDIS ABABA", "AFR", "Climate", "COP32 next", "Guardian"),
-    ("MILAN", "EUR", "Sport", "Milan 5-1 Frosinone", "Serie A"),
-    ("BARCELONA", "EUR", "Sport", "3-2 Villarreal", "La Liga"),
-    ("BERGAMO", "EUR", "Sport", "Atalanta 4-4 Inter", "Serie A"),
-    ("TURIN", "EUR", "Sport", "Juventus 4-0 Venezia", "Serie A"),
-    ("BREMEN", "EUR", "Sport", "4-0 Hamburg", "Bundesliga"),
-    ("AUGSBURG", "EUR", "Sport", "3-1 Mainz", "Bundesliga"),
-    ("GETAFE", "EUR", "Sport", "Atl\u00e9tico win 3-0 away", "La Liga"),
-    ("SANTANDER", "EUR", "Sport", "3-2 Sociedad", "La Liga"),
-    ("BANDUNG", "ASI", "Sport", "Persib 2-1 Bali", "Aktualita"),
-]
+# The ALSO rail is kept as one text block, one brief per line, fields
+# separated by a pipe: place, region, field, the one-line fact, and the
+# source tag. Facts that carry a registered figure name it in braces,
+# and the loader below fills it from the registry, so a brief can never
+# drift away from the checked number.
+ALSO_TEXT = """KRYVYI RIH | EUR | Conflict | {kryvyi_injured} hurt, {kryvyi_children} children | AP
+HORMUZ | MEA | Conflict | {hormuz_week} tankers hit in week | AJ
+TURIN | EUR | Sport | Alcaraz beats Zverev 6-2 | ATP
+WASHINGTON | AME | Diplomacy | Trump: 'permanent' | Fox
+NEW YORK | AME | Tech | AI-chip spy bid | NYT
+LIVERPOOL | EUR | Sport | 4-0 over Man Utd | BBC
+HULL | EUR | Sport | 2-0 Brighton, late brace | BBC
+PARIS | EUR | Sport | Dou\u00e9 ACL tear | AFP
+SYDNEY | ASI | Politics | US lead narrows | Lowy
+GILROY | AME | Politics | Interfaith ICE protest | KPFA
+SEATTLE | AME | Politics | ICE takes two | KPFA
+MADRID | EUR | Sport | Real fight back | La Liga
+ADDIS ABABA | AFR | Climate | COP32 next | Guardian
+MILAN | EUR | Sport | Milan 5-1 Frosinone | Serie A
+BARCELONA | EUR | Sport | 3-2 Villarreal | La Liga
+BERGAMO | EUR | Sport | Atalanta 4-4 Inter | Serie A
+TURIN | EUR | Sport | Juventus 4-0 Venezia | Serie A
+BREMEN | EUR | Sport | 4-0 Hamburg | Bundesliga
+AUGSBURG | EUR | Sport | 3-1 Mainz | Bundesliga
+GETAFE | EUR | Sport | Atl\u00e9tico win 3-0 away | La Liga
+SANTANDER | EUR | Sport | 3-2 Sociedad | La Liga
+BANDUNG | ASI | Sport | Persib 2-1 Bali | Aktualita"""
+
+ALSO = []
+for _row in ALSO_TEXT.strip().splitlines():
+    _f = [part.strip() for part in _row.split(" | ")]
+    ALSO.append((_f[0], _f[1], _f[2], _f[3].format_map(FIG), _f[4]))
 
 # ------------------------------------------------------------- world map
-# Coarse dot-grid world: 68 x 30 cells, lon -168..192, lat 78..-56.
-# Land is a list of (first col, last col) spans per row.
-LAND_SPANS = [
-    [(1, 5), (10, 18), (24, 27), (42, 64)],
-    [(1, 6), (8, 20), (23, 28), (38, 66)],
-    [(2, 21), (24, 27), (33, 66)],
-    [(3, 21), (24, 26), (32, 65)],
-    [(3, 20), (31, 31), (32, 64)],
-    [(4, 20), (31, 63)],
-    [(4, 19), (30, 62), (57, 58)],
-    [(4, 19), (30, 60), (56, 57)],
-    [(4, 18), (30, 58)],
-    [(5, 17), (29, 30), (34, 57)],
-    [(5, 16), (28, 57)],
-    [(6, 14), (28, 56)],
-    [(7, 13), (28, 55)],
-    [(9, 13), (28, 55)],
-    [(11, 14), (28, 56)],
-    [(16, 26), (29, 58)],
-    [(16, 26), (29, 59)],
-    [(16, 26), (30, 58)],
-    [(17, 26), (30, 38)],
-    [(17, 25), (30, 37)],
-    [(17, 25), (30, 37), (52, 61)],
-    [(18, 25), (31, 36), (42, 42), (52, 62)],
-    [(18, 24), (31, 36), (42, 42), (53, 62)],
-    [(18, 24), (31, 35), (42, 42), (53, 61)],
-    [(20, 22), (32, 34), (55, 58)],
-    [(20, 22), (64, 65)],
-    [(20, 21)],
-    [(20, 21)],
-    [(20, 21)],
-    [(20, 20)],
+# The world map is a coarse dot grid: each string below is one row of
+# the grid, read left to right from the far west to the far east, and a
+# hash mark means a land cell that gets a dot. The grid has thirty rows
+# and every row is the same width; the drawing code asserts that, so a
+# mistyped row fails loudly instead of shifting a continent.
+LAND_MAP = [
+    ".#####....#########.....####..............#######################...",
+    ".######.#############..######.........#############################.",
+    "..####################..####.....##################################.",
+    "...###################..###.....##################################..",
+    "...##################..........##################################...",
+    "....#################..........#################################....",
+    "....################..........#################################.....",
+    "....################..........###############################.......",
+    "....###############...........#############################.........",
+    ".....#############...........##...########################..........",
+    ".....############...........##############################..........",
+    "......#########.............#############################...........",
+    ".......#######..............############################............",
+    ".........#####..............############################............",
+    "...........####.............#############################...........",
+    "................###########..##############################.........",
+    "................###########..###############################........",
+    "................###########...#############################.........",
+    ".................##########...#########.............................",
+    ".................#########....########..............................",
+    ".................#########....########..............##########......",
+    "..................########.....######.....#.........###########.....",
+    "..................#######......######.....#..........##########.....",
+    "..................#######......#####......#..........#########......",
+    "....................###.........###....................####.........",
+    "....................###.........................................##..",
+    "....................##..............................................",
+    "....................##..............................................",
+    "....................##..............................................",
+    "....................#...............................................",
 ]
+assert all(len(row) == 68 for row in LAND_MAP) and len(LAND_MAP) == 30
 
 # Pins for the numbered stories (heroes 1-3, cards 4-15): (num, lon, lat,
 # dx, dy) — dx/dy nudge cluster pins apart, with a leader dot left behind.
@@ -186,10 +196,17 @@ PINS = [
     (10, 34, 31, 24, 34), (12, -115, 36, 0, 0), (13, 121, 31, 0, 0),
 ]
 
-TIMELINE = [("00:56", "Bepi in orbit"), ("05:28", "Two killed in Gaza"),
-            ("08:28", "Kryvyi toll 73"), ("12:48", "Nigeria toll 24"),
-            ("14:48", "Zelensky: Patriots"),
-            ("17:18", "Poland: 3 Kh-101"), ("19:17", "Alcaraz wins Turin")]
+# The day in UTC, kept as a text block: the hour first, then a caption.
+TIMELINE_TEXT = """00:56 | Bepi in orbit
+05:28 | Two killed in Gaza
+08:28 | Kryvyi toll 73
+12:48 | Nigeria toll 24
+14:48 | Zelensky: Patriots
+17:18 | Poland: 3 Kh-101
+19:17 | Alcaraz wins Turin"""
+
+TIMELINE = [tuple(_row.split(" | "))
+            for _row in TIMELINE_TEXT.strip().splitlines()]
 
 NUMBERS = [(FIG["cop31_overtime"], "hours of overtime"),
            (FIG["cop31_last_nodeal"], "last no-deal COP"),
@@ -954,13 +971,14 @@ def main():
     LINES.append(((map_x, map_y + map_h, map_x + map_w, map_y + map_h),
                   "map bottom"))
     cw2, chh2 = map_w / 68, map_h / 30
-    for r, spans in enumerate(LAND_SPANS):
-        for c0, c1 in spans:
-            for c in range(c0, c1 + 1):
-                cx = map_x + (c + 0.5) * cw2
-                cy2 = map_y + (r + 0.5) * chh2
-                d.ellipse([cx - 1.6, cy2 - 1.6, cx + 1.6, cy2 + 1.6],
-                          fill=(120, 150, 190))
+    for r, row in enumerate(LAND_MAP):
+        for c, cell in enumerate(row):
+            if cell != "#":
+                continue
+            cx = map_x + (c + 0.5) * cw2
+            cy2 = map_y + (r + 0.5) * chh2
+            d.ellipse([cx - 1.6, cy2 - 1.6, cx + 1.6, cy2 + 1.6],
+                      fill=(120, 150, 190))
     for (num, lon, lat, dx, dy) in PINS:
         tx = map_x + (lon + 168) / 360 * map_w
         tyy = map_y + (78 - lat) / 134 * map_h
