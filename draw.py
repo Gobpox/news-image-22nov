@@ -215,29 +215,12 @@ def SERIF(sz):
     return _f("PlayfairDisplay-Bold.ttf", sz)
 
 
-def SERIF_BLACK(sz):
-    return _f("PlayfairDisplay-Black.ttf", sz)
-
-
 def SANS(sz):
     return _f("Archivo-Regular.ttf", sz)
 
 
 def SANS_B(sz):
     return _f("Archivo-Bold.ttf", sz)
-
-
-def SANS_SB(sz):
-    return _f("Archivo-SemiBold.ttf", sz)
-
-
-def fit_font(text, maxw, maker, hi, lo):
-    probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-    for sz in range(hi, lo - 1, -1):
-        f = maker(sz)
-        if probe.textlength(text, font=f) <= maxw:
-            return f
-    return maker(lo)
 
 
 OVERFLOWS = []
@@ -395,31 +378,6 @@ def text_block(d, x, y, text, font, fill, maxw, leading, max_lines=None, tag="")
     return y
 
 
-def center(d, y, text, font, fill, cx=W // 2):
-    d.text((cx - d.textlength(text, font=font) / 2, y), text, font=font, fill=fill)
-
-
-def tracked_width(d, text, font, tracking):
-    return sum(d.textlength(ch, font=font) for ch in text) + tracking * (len(text) - 1)
-
-
-def tracked(d, x, y, text, font, fill, tracking=3):
-    bb = d.textbbox((x, y), text, font=font)
-    TEXT_BOXES.append(((bb[0], bb[1], bb[2] + tracking * (len(text) - 1),
-                        bb[3]), text, None))
-    d.suspend = True
-    for ch in text:
-        d.text((x, y), ch, font=font, fill=fill)
-        x += d.textlength(ch, font=font) + tracking
-    d.suspend = False
-    return x - tracking
-
-
-def SERIF_IT(sz):
-    return _f("PlayfairDisplay-SemiBoldItalic.ttf", sz)
-
-
-# ------------------------------------------------------------------ flags
 def _star(d, cx, cy, r, fill):
     import math
     pts = []
@@ -579,63 +537,6 @@ CARD_FLAGS = ["UA", "PL", "TR", "ID", "NG", "PS", "PS", "EU", "US", "CN"]
 HERO_FLAGS = ["TR", "BH", "LY"]
 
 
-def icon(d, field, x, y, col):
-    """A small pictogram per card field, so every panel carries a picture."""
-    if field == "Diplomacy":
-        d.ellipse([x, y + 4, x + 15, y + 19], outline=col, width=3)
-        d.ellipse([x + 9, y + 4, x + 24, y + 19], outline=col, width=3)
-    elif field == "Politics":
-        d.rectangle([x + 3, y + 10, x + 21, y + 22], outline=col, width=3)
-        d.line([x + 7, y + 10, x + 17, y + 10], fill=col, width=3)
-        d.line([x + 12, y, x + 12, y + 8], fill=col, width=3)
-    elif field == "Conflict":
-        for dx, dy in ((12, 0), (22, 6), (24, 14), (18, 22), (6, 22), (0, 12),
-                       (4, 4)):
-            d.line([x + 12, y + 12, x + dx, y + dy], fill=col, width=3)
-        d.ellipse([x + 8, y + 8, x + 16, y + 16], fill=col)
-    elif field == "Disaster":
-        d.polygon([(x + 12, y), (x + 20, y + 12), (x + 17, y + 22),
-                   (x + 7, y + 22), (x + 4, y + 12)], fill=col)
-        d.polygon([(x + 12, y + 10), (x + 16, y + 16), (x + 14, y + 22),
-                   (x + 10, y + 22), (x + 8, y + 16)], fill=(250, 205, 90))
-    elif field == "Crime":
-        d.polygon([(x + 12, y), (x + 22, y + 4), (x + 22, y + 12),
-                   (x + 12, y + 24), (x + 2, y + 12), (x + 2, y + 4)],
-                  outline=col, width=3)
-    elif field == "Courts":
-        d.line([x + 2, y + 6, x + 22, y + 6], fill=col, width=3)
-        d.line([x + 12, y + 6, x + 12, y + 20], fill=col, width=3)
-        d.line([x + 4, y + 20, x + 20, y + 20], fill=col, width=3)
-        d.polygon([(x + 2, y + 14), (x + 10, y + 14), (x + 6, y + 8)],
-                  fill=col)
-        d.polygon([(x + 14, y + 14), (x + 22, y + 14), (x + 18, y + 8)],
-                  fill=col)
-    elif field == "Science":
-        d.ellipse([x + 6, y + 6, x + 18, y + 18], fill=col)
-        d.ellipse([x, y + 9, x + 24, y + 15], outline=col, width=2)
-    elif field == "Sport":
-        d.polygon([(x + 5, y + 2), (x + 19, y + 2), (x + 17, y + 14),
-                   (x + 7, y + 14)], outline=col, width=3)
-        d.line([x + 12, y + 14, x + 12, y + 20], fill=col, width=3)
-        d.line([x + 6, y + 22, x + 18, y + 22], fill=col, width=3)
-    else:
-        d.ellipse([x + 3, y + 3, x + 21, y + 21], outline=col, width=3)
-
-
-# ------------------------------------------------------------------ scenes
-def scene_label(d, x, y, w, text, h=66):
-    chip_r = x + 8 + d.textlength(text, font=SANS_B(13)) + 12
-    d.rectangle([x + 8, y + h - 22, chip_r, y + h - 2], fill=(10, 14, 30))
-    OBSTACLES.append(((x + 8, y + h - 22, chip_r, y + h - 2),
-                      f"scene label chip '{text[:18]}'", TAG[0]))
-    d.text((x + 14, y + h - 19), text, font=SANS_B(13), fill=(255, 255, 255))
-    H_CHECKS.append((f"scene label '{text}' right margin",
-                     round((chip_r - 6) - (x + 14 + d.textlength(
-                         text, font=SANS_B(13))), 1)))
-    if x + 14 + d.textlength(text, font=SANS_B(13)) > chip_r - 6:
-        OVERFLOWS.append(f"H-OVERFLOW scene label: {text}")
-
-
 def scene_antalya(d, x, y, w, h):
     # DOMINANT: the hall's big NO DEAL banner over the emptying talks hall
     for yy in range(h):
@@ -729,48 +630,7 @@ def scene_benghazi(d, x, y, w, h):
     d.rectangle([x + 34, y + 40, x + 40, y + 46], fill=(200, 60, 40))
 
 
-
 HERO_SCENES = [scene_antalya, scene_bahrain, scene_benghazi]
-
-
-def badge(d, x, y, num, region):
-    col = REGIONS[region][1]
-    d.rectangle([x, y, x + 24, y + 24], fill=col)
-    t = str(num)
-    f = SANS_B(14 if len(t) < 2 else 12)
-    d.text((x + 12 - d.textlength(t, font=f) / 2, y + 4), t, font=f,
-           fill=(255, 255, 255))
-
-
-def tally_bar(d, y, counts, total, x0=76, x1=560, hgt=13):
-    x = x0
-    for code in ("EUR", "ASI", "AME", "MEA", "GLO", "AFR"):
-        n = counts.get(code, 0)
-        if not n:
-            continue
-        wseg = (x1 - x0) * n / total
-        d.rectangle([x, y, x + wseg, y + hgt], fill=REGIONS[code][1])
-        lab = f"{REGIONS[code][0]} {n}"
-        if d.textlength(lab, font=SANS_B(10)) <= wseg - 8:
-            d.text((x + 5, y + 1), lab, font=SANS_B(10), fill=(255, 255, 255))
-        x += wseg
-    return y + hgt
-
-
-# --------------------------------------- card strip pictograms
-# Each card strip carries ONE dominant symbol, drawn natively at the
-# strip's own size (190x42): oversized simple shapes, at most two or
-# three elements, strong contrast. The glance test: the topic should
-# be guessable from the symbol alone, before any headline is read.
-
-def flame_pair(g, kx, ky, s, outer=(232, 110, 30), inner=(250, 196, 60)):
-    # two-tone flame silhouette: a wide outer tongue, a slim inner one
-    g.polygon([(kx, ky - s), (kx + s * 0.62, ky + s * 0.35),
-               (kx + s * 0.3, ky + s * 0.85), (kx - s * 0.3, ky + s * 0.85),
-               (kx - s * 0.62, ky + s * 0.35)], fill=outer)
-    g.polygon([(kx, ky - s * 0.45), (kx + s * 0.34, ky + s * 0.3),
-               (kx + s * 0.16, ky + s * 0.8), (kx - s * 0.16, ky + s * 0.8),
-               (kx - s * 0.34, ky + s * 0.3)], fill=inner)
 
 
 def burst_shape(g, kx, ky, rad, col=(255, 150, 40), core=(255, 226, 120)):
@@ -1255,31 +1115,10 @@ def audit_graphics():
     return pens
 
 
-
 # ------------------------------------------------------- card scenes (v3.3)
 # CLARITY first (Ahmad, v3.3): one dominant subject per card, drawn big
 # and simple — a reader who has not seen the headline should guess the
 # story from the scene alone. Supporters stay small and quiet.
-def card_label(d, x, y, w, h, text):
-    tw = d.textlength(text, font=SANS_B(13))
-    d.rectangle([x + 3, y + h - 21, x + 3 + tw + 10, y + h - 3],
-                fill=(10, 14, 30))
-    OBSTACLES.append(((x + 3, y + h - 21, x + 3 + tw + 10, y + h - 3),
-                      f"card label chip '{text}'", TAG[0]))
-    d.text((x + 8, y + h - 18), text, font=SANS_B(13), fill=(255, 255, 255))
-    H_CHECKS.append((f"card scene label '{text}'",
-                     round((x + 3 + tw + 10) - (x + w - 1), 1)))
-    if x + 3 + tw + 10 > x + w - 1:
-        OVERFLOWS.append(f"H-OVERFLOW card scene label: {text}")
-
-
-def _sky(d, x, y, w, h, top, bot):
-    for yy in range(h):
-        t = yy / max(1, h - 1)
-        c = tuple(int(top[i] + (bot[i] - top[i]) * t) for i in range(3))
-        d.line([x, y + yy, x + w, y + yy], fill=c)
-
-
 def _flame(d, cx, cy, s, col=(255, 140, 40)):
     d.polygon([(cx, cy - s), (cx + s * 0.62, cy + s * 0.4),
                (cx + s * 0.3, cy + s), (cx - s * 0.3, cy + s),
@@ -1287,222 +1126,6 @@ def _flame(d, cx, cy, s, col=(255, 140, 40)):
     d.polygon([(cx, cy - s * 0.3), (cx + s * 0.3, cy + s * 0.5),
                (cx, cy + s * 0.95), (cx - s * 0.3, cy + s * 0.5)],
               fill=(250, 205, 90))
-
-
-def sc_dymer(d, x, y, w, h):
-    # DOMINANT: a big apartment block, one section collapsed, rescuer below
-    _sky(d, x, y, w, h, (120, 150, 180), (190, 205, 215))
-    d.rectangle([x + 14, y + 6, x + 96, y + 62], fill=(150, 142, 130))
-    for fy in (12, 24, 36, 48):
-        for fx in (22, 40, 58, 76):
-            d.rectangle([x + fx, y + fy, x + fx + 10, y + fy + 7],
-                        fill=(60, 70, 90))
-    d.polygon([(x + 52, y + 62), (x + 62, y + 30), (x + 96, y + 30),
-               (x + 96, y + 62)], fill=(110, 102, 92))
-    d.polygon([(x + 52, y + 62), (x + 62, y + 30), (x + 74, y + 30),
-               (x + 64, y + 62)], fill=(90, 82, 74))
-    d.ellipse([x + 28, y + 8, x + 44, y + 24], fill=(222, 184, 150))
-    d.rectangle([x + 22, y + 24, x + 50, y + 48], fill=(255, 120, 40))
-    d.rectangle([x + 22, y + 48, x + 50, y + 62], fill=(40, 40, 50))
-    card_label(d, x, y, w, h, "DYMER")
-
-
-def sc_warsaw(d, x, y, w, h):
-    # DOMINANT: a big cruise missile lying on the ground, debris around it
-    _sky(d, x, y, w, h, (168, 198, 224), (226, 232, 238))
-    d.rectangle([x, y + 52, x + w, y + h], fill=(120, 130, 110))
-    d.polygon([(x + 8, y + 30), (x + 28, y + 24), (x + 88, y + 24),
-               (x + 98, y + 30), (x + 88, y + 36), (x + 28, y + 36)],
-              fill=(200, 204, 210), outline=INK)
-    d.polygon([(x + 88, y + 24), (x + 104, y + 30), (x + 88, y + 36)],
-              fill=(150, 154, 160), outline=INK)
-    d.polygon([(x + 28, y + 24), (x + 14, y + 14), (x + 20, y + 36)],
-              fill=(150, 154, 160), outline=INK)
-    d.rectangle([x + 48, y + 26, x + 58, y + 34], fill=RED)
-    for dx, dy in ((16, 48), (30, 56), (84, 50), (96, 56)):
-        d.polygon([(x + dx, y + dy), (x + dx + 8, y + dy - 4),
-                   (x + dx + 10, y + dy + 4)], fill=(70, 74, 80))
-    d.rectangle([x + 4, y + 62, x + w, y + h], fill=(90, 100, 84))
-    card_label(d, x, y, w, h, "WARSAW")
-
-
-def sc_istanbul(d, x, y, w, h):
-    # DOMINANT: a marching crowd under one big blank banner
-    _sky(d, x, y, w, h, (214, 190, 150), (232, 214, 180))
-    d.rectangle([x + 8, y + 6, x + w - 8, y + 22], fill=(245, 243, 236),
-                outline=INK, width=2)
-    d.line([x + 12, y + 22, x + 12, y + 40], fill=INK, width=3)
-    d.line([x + w - 12, y + 22, x + w - 12, y + 40], fill=INK, width=3)
-    for i in range(6):
-        xx = x + 12 + i * 16
-        d.ellipse([xx, y + 30, xx + 12, y + 42], fill=(222, 184, 150))
-        d.rectangle([xx - 1, y + 42, xx + 13, y + 56], fill=TEAL if i % 2 else RED)
-    d.rectangle([x, y + 56, x + w, y + h], fill=(120, 110, 96))
-    card_label(d, x, y, w, h, "ISTANBUL")
-
-
-def sc_cikande(d, x, y, w, h):
-    # DOMINANT: a big factory block in flames, black smoke above it
-    _sky(d, x, y, w, h, (226, 200, 160), (240, 224, 190))
-    d.rectangle([x + 10, y + 26, x + 100, y + 62], fill=(150, 148, 142))
-    d.rectangle([x + 18, y + 34, x + 30, y + 44], fill=(60, 70, 90))
-    d.rectangle([x + 38, y + 34, x + 50, y + 44], fill=(60, 70, 90))
-    d.rectangle([x + 58, y + 34, x + 70, y + 44], fill=(60, 70, 90))
-    _flame(d, x + 40, y + 18, 13)
-    _flame(d, x + 62, y + 22, 10)
-    _flame(d, x + 84, y + 16, 11)
-    d.ellipse([x + 30, y + 2, x + 52, y + 14], fill=(70, 70, 80))
-    d.ellipse([x + 58, y + 0, x + 78, y + 12], fill=(90, 90, 100))
-    d.rectangle([x, y + 62, x + w, y + h], fill=(110, 100, 88))
-    card_label(d, x, y, w, h, "CIKANDE")
-
-
-def sc_bayelsa(d, x, y, w, h):
-    # DOMINANT: an upside-down boat in the river, a life ring beside it
-    _sky(d, x, y, w, h, (170, 200, 220), (222, 230, 234))
-    d.rectangle([x, y + 40, x + w, y + h], fill=(52, 92, 128))
-    d.polygon([(x + 12, y + 40), (x + 24, y + 26), (x + 86, y + 26),
-               (x + 98, y + 40)], fill=(120, 74, 40))
-    d.rectangle([x + 12, y + 38, x + 98, y + 42], fill=(90, 54, 30))
-    d.ellipse([x + 18, y + 46, x + 30, y + 58], fill=(222, 184, 150))
-    d.ellipse([x + 70, y + 48, x + 80, y + 58], fill=(222, 184, 150))
-    d.ellipse([x + 84, y + 12, x + 102, y + 30], outline=(255, 60, 40),
-              width=4)
-    d.ellipse([x + 90, y + 18, x + 96, y + 24], outline=(255, 60, 40),
-              width=3)
-    card_label(d, x, y, w, h, "BAYELSA")
-
-
-def sc_westbank(d, x, y, w, h):
-    # DOMINANT: a big burning car in front of a stone house, olive tree
-    _sky(d, x, y, w, h, (214, 190, 150), (232, 214, 180))
-    d.rectangle([x + 8, y + 10, x + 60, y + 44], fill=(190, 172, 140))
-    d.rectangle([x + 20, y + 20, x + 32, y + 32], fill=(60, 70, 90))
-    d.rectangle([x + 40, y + 20, x + 52, y + 32], fill=(60, 70, 90))
-    d.polygon([(x + 88, y + 4), (x + 96, y + 4), (x + 92, y + 16),
-               (x + 100, y + 16), (x + 86, y + 34), (x + 90, y + 20),
-               (x + 82, y + 20)], fill=(70, 130, 70), outline=INK)
-    d.rectangle([x + 16, y + 36, x + 94, y + 54], fill=(52, 56, 66))
-    d.polygon([(x + 20, y + 36), (x + 90, y + 36), (x + 84, y + 44),
-               (x + 26, y + 44)], fill=(70, 74, 84))
-    _flame(d, x + 55, y + 30, 12)
-    _flame(d, x + 72, y + 34, 8)
-    d.ellipse([x + 26, y + 52, x + 38, y + 62], fill=INK)
-    d.ellipse([x + 72, y + 52, x + 84, y + 62], fill=INK)
-    card_label(d, x, y, w, h, "WEST BANK")
-
-
-def sc_gaza(d, x, y, w, h):
-    # DOMINANT: a big tent camp, one tent torn, smoke over the roofs
-    _sky(d, x, y, w, h, (214, 190, 150), (232, 214, 180))
-    d.polygon([(x + 14, y + 30), (x + 52, y + 12), (x + 90, y + 30),
-               (x + 90, y + 52), (x + 14, y + 52)], fill=(245, 243, 236),
-              outline=INK, width=2)
-    d.polygon([(x + 52, y + 12), (x + 66, y + 30), (x + 52, y + 30)],
-              fill=(200, 198, 190), outline=INK)
-    d.polygon([(x + 70, y + 44), (x + 96, y + 26), (x + 104, y + 44)],
-              fill=(225, 222, 214), outline=INK)
-    d.ellipse([x + 78, y + 4, x + 98, y + 16], fill=(90, 90, 100))
-    d.ellipse([x + 88, y + 0, x + 104, y + 10], fill=(70, 70, 80))
-    d.rectangle([x, y + 52, x + w, y + h], fill=(190, 172, 140))
-    card_label(d, x, y, w, h, "KHAN YOUNIS")
-
-
-def sc_mercury(d, x, y, w, h):
-    # DOMINANT: the planet, big; the spacecraft burning toward it
-    _sky(d, x, y, w, h, (8, 10, 24), (24, 28, 48))
-    for sx, sy in ((8, 6), (26, 12), (96, 4), (14, 26)):
-        d.ellipse([x + sx, y + sy, x + sx + 2, y + sy + 2],
-                  fill=(255, 255, 230))
-    d.ellipse([x + 36, y + 24, x + 82, y + 70], fill=(168, 164, 158))
-    OBSTACLES.append(((x + 36, y + 24, x + 82, y + 70),
-                      "mercury disc", TAG[0]))
-    for cx, cy, r in ((50, 38, 5), (68, 52, 6), (58, 62, 4), (72, 38, 4)):
-        d.ellipse([x + cx - r, y + cy - r, x + cx + r, y + cy + r],
-                  outline=(130, 126, 120), width=2)
-    d.rectangle([x + 18, y + 24, x + 34, y + 38], fill=(200, 204, 210))
-    d.polygon([(x + 2, y + 20), (x + 18, y + 26), (x + 18, y + 36),
-               (x + 2, y + 42)], fill=(70, 110, 190))
-    d.polygon([(x + 34, y + 26), (x + 48, y + 20), (x + 48, y + 42),
-               (x + 34, y + 36)], fill=(70, 110, 190))
-    _flame(d, x + 26, y + 44, 7, col=(255, 160, 60))
-    card_label(d, x, y, w, h, "MERCURY")
-
-
-def sc_turin(d, x, y, w, h):
-    # DOMINANT: a big gold trophy; a tennis ball and court lines behind
-    _sky(d, x, y, w, h, (120, 170, 110), (90, 150, 84))
-    d.rectangle([x + 4, y + 8, x + w - 4, y + 60], fill=(196, 120, 70))
-    d.line([x + 4, y + 34, x + w - 4, y + 34], fill=(240, 240, 240),
-           width=3)
-    d.ellipse([x + 12, y + 44, x + 26, y + 58], fill=(210, 230, 80),
-              outline=(240, 240, 240), width=2)
-    d.polygon([(x + 38, y + 8), (x + 72, y + 8), (x + 66, y + 34),
-               (x + 44, y + 34)], fill=(250, 205, 90), outline=INK)
-    d.arc([x + 30, y + 12, x + 46, y + 28], 90, 270, fill=(250, 205, 90),
-          width=4)
-    d.arc([x + 64, y + 12, x + 80, y + 28], 270, 90, fill=(250, 205, 90),
-          width=4)
-    d.rectangle([x + 51, y + 34, x + 59, y + 44], fill=(250, 205, 90),
-                outline=INK)
-    d.rectangle([x + 42, y + 44, x + 68, y + 50], fill=(250, 205, 90),
-                outline=INK)
-    card_label(d, x, y, w, h, "TURIN")
-
-
-def sc_lasvegas(d, x, y, w, h):
-    # DOMINANT: a big open-wheel race car under neon lights
-    _sky(d, x, y, w, h, (18, 26, 54), (70, 62, 92))
-    for nx, nc in ((6, (255, 60, 120)), (30, (60, 220, 255)),
-                   (54, (255, 214, 90)), (78, (255, 60, 120))):
-        d.rectangle([x + nx, y + 4, x + nx + 18, y + 10], fill=nc)
-    d.polygon([(x + 10, y + 44), (x + 22, y + 36), (x + 78, y + 36),
-               (x + 96, y + 44), (x + 90, y + 52), (x + 16, y + 52)],
-              fill=(30, 60, 160))
-    d.polygon([(x + 40, y + 36), (x + 48, y + 24), (x + 66, y + 24),
-               (x + 72, y + 36)], fill=(20, 40, 120))
-    d.ellipse([x + 24, y + 46, x + 40, y + 62], fill=INK)
-    d.ellipse([x + 66, y + 46, x + 82, y + 62], fill=INK)
-    d.rectangle([x + 6, y + 30, x + 18, y + 36], fill=(200, 30, 40))
-    d.rectangle([x, y + 62, x + w, y + h], fill=(40, 40, 52))
-    card_label(d, x, y, w, h, "LAS VEGAS")
-
-
-def sc_washington(d, x, y, w, h):
-    # DOMINANT: the Capitol dome, big, with a signed deal paper in front
-    _sky(d, x, y, w, h, (150, 175, 205), (215, 225, 235))
-    d.ellipse([x + 38, y + 6, x + 72, y + 34], fill=(240, 240, 235))
-    d.rectangle([x + 30, y + 30, x + 80, y + 62], fill=(230, 228, 220))
-    d.rectangle([x + 52, y + 2, x + 58, y + 10], fill=(240, 240, 235))
-    for cx in (36, 48, 60, 72):
-        d.rectangle([x + cx, y + 40, x + cx + 4, y + 54], fill=(180, 178, 170))
-    d.rectangle([x + 78, y + 34, x + 104, y + 62], fill=(245, 243, 236),
-                outline=INK, width=2)
-    d.line([x + 82, y + 42, x + 100, y + 42], fill=INK, width=2)
-    d.line([x + 82, y + 48, x + 100, y + 48], fill=INK, width=2)
-    d.line([x + 82, y + 54, x + 92, y + 54], fill=RED, width=2)
-    d.ellipse([x + 94, y + 56, x + 102, y + 62], fill=RED)
-    card_label(d, x, y, w, h, "WASHINGTON")
-
-
-def sc_shanghai(d, x, y, w, h):
-    # DOMINANT: a big rising chart arrow over a tower skyline
-    _sky(d, x, y, w, h, (206, 214, 206), (228, 232, 222))
-    d.rectangle([x + 8, y + 38, x + 24, y + 62], fill=(120, 130, 145))
-    d.rectangle([x + 30, y + 28, x + 46, y + 62], fill=(90, 100, 120))
-    d.rectangle([x + 52, y + 18, x + 68, y + 62], fill=(52, 84, 140))
-    d.ellipse([x + 56, y + 8, x + 64, y + 16], fill=(52, 84, 140))
-    d.rectangle([x + 74, y + 34, x + 90, y + 62], fill=(120, 130, 145))
-    d.line([x + 10, y + 52, x + 40, y + 40, x + 62, y + 44, x + 96, y + 14],
-           fill=(0, 140, 60), width=4)
-    d.polygon([(x + 96, y + 14), (x + 84, y + 12), (x + 92, y + 26)],
-              fill=(0, 140, 60))
-    card_label(d, x, y, w, h, "SHANGHAI")
-
-
-CARD_SCENES = [sc_dymer, sc_warsaw, sc_istanbul, sc_cikande, sc_bayelsa,
-               sc_westbank, sc_gaza, sc_mercury, sc_lasvegas, sc_shanghai]
-
 
 
 if __name__ == "__main__":
