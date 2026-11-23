@@ -5,8 +5,8 @@
 # The World in One Picture — Sunday 22 November 2026
 
 A make.fun `news-image-20261122` entry: one 1024×1024 image summing up
-Sunday 22 November 2026's world news — 3 heroes, 12 cards, 8 briefs,
-23 stories across 6 regions, every story dated to the day, with a date
+Sunday 22 November 2026's world news — 3 heroes, 12 cards and a
+20-line ALSO rail: 35 stories across 6 regions, every story dated to the day, with a date
 check naming what was excluded and a "not yet known" line.
 
 ## Build
@@ -18,14 +18,15 @@ draws its numbers from. `main.py` is the competition entry point: it
 copies `entry.png` to the output directory, standard library only,
 deterministic bytes.
 
-## Density note
+## Structure note
 
-The edition-21 jury verdict praised the system's breadth, attribution
-and date check, but criticised density and small-size craft in almost
-every final call. This edition therefore runs 23 stories instead of 27
-(the brief rail was cut from 12 to 8) and spends the freed space on
-type above the readability floors — card headlines 21px, brief
-headlines 17px, brief text 15px — and more air between panels.
+Edition 21's top 10 were counted directly from their artefacts: 35-43
+stories each, built as 13-15 large pictured stories over a dense
+one-line "ALSO" rail of 21-30 briefs. This entry follows that
+structure: 3 heroes + 12 cards pictured large (card headlines 21px),
+plus a 20-line ALSO ON SUNDAY rail of numbered one-line briefs
+(place, key fact, source) at 14px, the brief-text floor. Density is
+quarantined in the rail; the pictured layer stays airy.
 
 ## License
 

@@ -5,10 +5,9 @@ Geometry first (GATES.md, approved by Ahmad 2026-11-22): the grid and
 the type floors were locked before the story count — hero headlines
 >= 30px, card headlines >= 19px, brief headlines >= 16px, brief text
 >= 14px, in-scene labels >= 13px, at most 3 heroes, briefs <= 9 words
-over 2 lines. DENSITY CUT (ni21 jury verdict: density/craft at 300px was
-the only repeated criticism): 23 stories — 3 heroes + 12 cards + 8 briefs —
-with card headlines at 21px, brief headlines at 17px, brief text at 15px,
-all above the floors, and more air between panels.
+over 2 lines. STRUCTURE (from the ni21 top-10 artefacts, counted directly:
+35-43 stories each): 35 stories — 3 heroes + 12 cards pictured large, plus
+a 20-line ALSO rail of one-line briefs at 14px. Card headlines at 21px.
 
 Every important number is read from figures.json (the registry); no
 panel types a figure freehand. The strap counts, the region tally and
@@ -119,27 +118,33 @@ CARDS = [
      + " on 30 November.", "Reuters", "C"),
 ]
 
-# Briefs: (place, region, field, headline, text) — headline + text <= 9 words.
-# 8 briefs after the density cut (Hull, Paris, Gilroy, Milan dropped —
-# duplicate themes/minor sport). Letters were never shrunk to fit.
-BRIEFS = [
-    ("KRYVYI RIH", "EUR", "Conflict", "Toll rises to 73",
-     FIG["kryvyi_injured"] + " hurt, " + FIG["kryvyi_children"]
-     + " children · AP"),
-    ("HORMUZ", "MEA", "Conflict", FIG["hormuz_week"] + " tankers in week",
-     FIG["kharg_tankers"] + " more wait at Kharg · AJ"),
-    ("NEW YORK", "AME", "Tech", "AI-chip spy bid",
-     "NYT reports the campaign · NYT"),
-    ("LIVERPOOL", "EUR", "Sport", "4-0 over Utd",
-     "Pochettino debut spoiled · BBC"),
-    ("SYDNEY", "ASI", "Politics", "US lead narrows",
-     "Lowy power index out · Lowy"),
-    ("SEATTLE", "AME", "Politics", "ICE takes two",
-     "Masked agents in Seattle · KPFA"),
-    ("MADRID", "EUR", "Sport", "Real fight back",
-     "Comeback beats Celta · La Liga"),
-    ("ADDIS ABABA", "AFR", "Climate", "COP32's turn",
-     "Items carry over · Guardian"),
+# ALSO rail: (place, region, field, fact, source) — one line per story,
+# numbered 16-35. This is the top-10 winners' structure from edition 21:
+# density is quarantined in this one-line rail while the pictured layer
+# (heroes + cards) stays large and airy.
+ALSO = [
+    ("KRYVYI RIH", "EUR", "Conflict",
+     FIG["kryvyi_injured"] + " hurt, " + FIG["kryvyi_children"] + " children", "AP"),
+    ("HORMUZ", "MEA", "Conflict",
+     FIG["hormuz_week"] + " tankers hit in week", "AJ"),
+    ("NEW YORK", "AME", "Tech", "AI-chip spy bid", "NYT"),
+    ("LIVERPOOL", "EUR", "Sport", "4-0 over Man Utd", "BBC"),
+    ("HULL", "EUR", "Sport", "2-0 Brighton, late brace", "BBC"),
+    ("PARIS", "EUR", "Sport", "Dou\u00e9 ACL tear", "AFP"),
+    ("SYDNEY", "ASI", "Politics", "US lead narrows", "Lowy"),
+    ("GILROY", "AME", "Politics", "Interfaith ICE protest", "KPFA"),
+    ("SEATTLE", "AME", "Politics", "ICE takes two", "KPFA"),
+    ("MADRID", "EUR", "Sport", "Real fight back", "La Liga"),
+    ("ADDIS ABABA", "AFR", "Climate", "COP32 next", "Guardian"),
+    ("MILAN", "EUR", "Sport", "Milan 5-1 Frosinone", "Serie A"),
+    ("BARCELONA", "EUR", "Sport", "3-2 Villarreal", "La Liga"),
+    ("BERGAMO", "EUR", "Sport", "Atalanta 4-4 Inter", "Serie A"),
+    ("TURIN", "EUR", "Sport", "Juventus 4-0 Venezia", "Serie A"),
+    ("BREMEN", "EUR", "Sport", "4-0 Hamburg", "Bundesliga"),
+    ("AUGSBURG", "EUR", "Sport", "3-1 Mainz", "Bundesliga"),
+    ("GETAFE", "EUR", "Sport", "Atl\u00e9tico win 3-0 away", "La Liga"),
+    ("SANTANDER", "EUR", "Sport", "3-2 Sociedad", "La Liga"),
+    ("BANDUNG", "ASI", "Sport", "Persib 2-1 Bali", "Aktualita"),
 ]
 
 # ------------------------------------------------------------- world map
@@ -183,7 +188,7 @@ LAND_SPANS = [
 PINS = [
     (1, 31, 37, 16, 20), (2, 50, 26, 30, 36), (3, 20, 32, -30, -14),
     (4, 30, 50, 30, -6), (5, 21, 52, -28, -16), (6, 29, 41, -30, 18),
-    (7, 106, -6, 0, 0), (8, 6, 5, 0, 0), (9, 35, 32, -24, 30),
+    (7, 106, -6, 0, 0), (8, 6, 5, -40, 30), (9, 35, 32, -24, 30),
     (10, 34, 31, 24, 34), (12, 8, 45, -30, 30), (13, -115, 36, 0, 0),
     (14, -77, 39, 0, 0), (15, 121, 31, 0, 0),
 ]
@@ -204,7 +209,7 @@ NUMBERS = [(FIG["cop31_overtime"], "hours of overtime"),
 def all_stories():
     out = [(h[1], h[2]) for h in HEROES]
     out += [(c[1], c[2]) for c in CARDS]
-    out += [(b[1], b[2]) for b in BRIEFS]
+    out += [(b[1], b[2]) for b in ALSO]
     return out
 
 
@@ -910,36 +915,36 @@ def main():
         check_h(f"card{i+4} info", CARD_INFO[i], SANS(13), tx, x + chw - 6)
     by = cy + 3 * chh + chh + 2
 
-    # ------------------------------------------- briefs (left) + map (right)
+    # -------------------------------------- ALSO rail (left) + map (right)
     sec_y = by
-    d.rectangle([16, sec_y, 536, sec_y + 16], fill=NAVY)
-    d.text((22, sec_y + 2), f"THE REST OF SUNDAY — {len(BRIEFS)} BRIEFS",
+    d.rectangle([16, sec_y, 632, sec_y + 16], fill=NAVY)
+    d.text((22, sec_y + 2), f"ALSO ON SUNDAY — {len(ALSO)} MORE STORIES",
            font=SANS_B(12), fill=(255, 255, 255))
-    colw = (536 - 16 - 10) // 2
-    for i, (place, region, field, head, text) in enumerate(BRIEFS):
+    colw = (632 - 16 - 16) // 2
+    for i, (place, region, field, fact, src) in enumerate(ALSO):
         col = i % 2
         row = i // 2
-        x = 16 + col * (colw + 10)
-        yy = sec_y + 19 + row * 48
-        d.rectangle([x, yy + 3, x + 9, yy + 12], fill=REGIONS[region][1])
-        d.text((x + 14, yy), place, font=SANS_B(17), fill=REGIONS[region][1])
-        px = x + 14 + d.textlength(place, font=SANS_B(17)) + 6
-        if px + d.textlength(head, font=SANS_B(17)) > x + colw:
-            OVERFLOWS.append(f"brief{i} headline too wide: {place} {head[:30]}")
-        if d.textlength(text, font=SANS(15)) > colw - 14:
-            OVERFLOWS.append(f"brief{i} text too wide: {text[:30]}")
-        d.text((px, yy), head, font=SANS_B(17), fill=INK)
-        d.text((x + 14, yy + 26), text, font=SANS(15), fill=(52, 48, 42))
+        x = 16 + col * (colw + 16)
+        yy = sec_y + 22 + row * 19
+        d.rectangle([x, yy + 4, x + 7, yy + 11], fill=REGIONS[region][1])
+        head = f"{i + 16} {place} — "
+        d.text((x + 11, yy), head, font=SANS_B(14),
+               fill=REGIONS[region][1])
+        px = x + 15 + d.textlength(head, font=SANS_B(14))
+        tail = f"{fact} · {src}"
+        if px + d.textlength(tail, font=SANS(14)) > x + colw:
+            OVERFLOWS.append(f"also{i} too wide: {place} {fact[:30]}")
+        d.text((px, yy), tail, font=SANS(14), fill=INK)
 
     # map panel: pins carry the story numbers of heroes (1-3) and cards (4-15)
-    mx0, my0, mx1 = 552, sec_y, 1008
+    mx0, my0, mx1 = 656, sec_y, 1008
     d.rectangle([mx0, my0, mx1, sec_y + 16], fill=NAVY)
     d.text((mx0 + 8, my0 + 2), "WHERE IT HAPPENED — PIN = STORY NUMBER",
            font=SANS_B(12), fill=(255, 255, 255))
     check_h("map header", "WHERE IT HAPPENED — PIN = STORY NUMBER",
             SANS_B(12), mx0 + 8, mx1 - 8)
-    check_h("briefs header", f"THE REST OF SUNDAY — {len(BRIEFS)} BRIEFS",
-            SANS_B(12), 22, 536 - 8)
+    check_h("also header", f"ALSO ON SUNDAY — {len(ALSO)} MORE STORIES",
+            SANS_B(12), 22, 632 - 8)
     map_y, map_h, map_w = sec_y + 22, 174, mx1 - mx0 - 16
     map_x = mx0 + 8
     d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h], fill=(16, 26, 44))
@@ -964,10 +969,8 @@ def main():
         d.text((px2 - d.textlength(t, font=SANS_B(12)) / 2, py2 - 7), t,
                font=SANS_B(12), fill=(255, 255, 255))
     cap_y = map_y + map_h + 6
-    d.text((mx0 + 8, cap_y), "11 MERCURY — OFF THE MAP, IN SPACE · EUROPE "
-           "PINS NUDGED APART", font=SANS_B(11), fill=MUTE)
-    check_h("map caption", "11 MERCURY — OFF THE MAP, IN SPACE · EUROPE "
-            "PINS NUDGED APART", SANS_B(11), mx0 + 8, mx1 - 8)
+    d.text((mx0 + 8, cap_y), "11 MERCURY — OFF THE MAP, IN SPACE", font=SANS_B(11), fill=MUTE)
+    check_h("map caption", "11 MERCURY — OFF THE MAP, IN SPACE", SANS_B(11), mx0 + 8, mx1 - 8)
     by = sec_y + 218
 
     # ------------------------------------------------- numbers + bars
