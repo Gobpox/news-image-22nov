@@ -24,8 +24,8 @@ The layout clones, zone by zone, the measured template of edition
 21's final winner (superskie): eyebrow with computed counts and a red
 rule, giant Playfair date, a "THE DAY IN UTC" timeline bar, hero
 panels with an in-scene red statement band, numbered kickers and
-status chips, compact 5-across x 2-row cards (scene strip, flag,
-status chip, big overlay, headline, merged deck), a left map with
+status chips, compact 5-across x 2-row cards (single-pictogram strip drawn
+at strip scale, flag, status chip, big overlay, headline, deck), a left map with
 region-coloured pins and a counted dot legend beside a two-column
 ALSO rail, a red-framed DATE CHECK box with tab, and a footer with
 the HOW SURE legend and sources line. The story set is locked at

@@ -757,6 +757,168 @@ def tally_bar(d, y, counts, total, x0=76, x1=560, hgt=13):
     return y + hgt
 
 
+# ------------------------------------------------- strip pictograms (v7)
+# One dominant symbol per card, drawn AT strip size (190x42): big simple
+# shapes, max 2-3 elements, high contrast. A reader who has not seen the
+# headline should be able to guess the topic from the strip alone.
+
+def _flame(d, cx, cy, s, outer=(232, 110, 30), inner=(250, 196, 60)):
+    d.polygon([(cx, cy - s), (cx + s * 0.62, cy + s * 0.35),
+               (cx + s * 0.3, cy + s * 0.85), (cx - s * 0.3, cy + s * 0.85),
+               (cx - s * 0.62, cy + s * 0.35)], fill=outer)
+    d.polygon([(cx, cy - s * 0.45), (cx + s * 0.34, cy + s * 0.3),
+               (cx + s * 0.16, cy + s * 0.8), (cx - s * 0.16, cy + s * 0.8),
+               (cx - s * 0.34, cy + s * 0.3)], fill=inner)
+
+
+def _burst(d, cx, cy, r, col=(255, 150, 40), core=(255, 226, 120)):
+    import math
+    pts = []
+    for k in range(16):
+        ang = math.pi * k / 8
+        rr = r if k % 2 == 0 else r * 0.45
+        pts.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
+    d.polygon(pts, fill=col)
+    d.ellipse([cx - r * 0.32, cy - r * 0.32, cx + r * 0.32, cy + r * 0.32],
+              fill=core)
+
+
+def art_dymer(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(148, 168, 188))
+    # one big quadcopter drone, left-centre
+    ink = (24, 28, 38)
+    for (rx, ry) in ((x + 22, y + 7), (x + 78, y + 7), (x + 22, y + 25),
+                     (x + 78, y + 25)):
+        d.line([rx + 8, ry + 3, x + 58, y + 19], fill=ink, width=4)
+        d.ellipse([rx, ry, rx + 16, ry + 6], fill=ink)
+    d.rectangle([x + 44, y + 14, x + 72, y + 26], fill=ink)
+    d.ellipse([x + 52, y + 24, x + 64, y + 32], fill=(200, 40, 36))
+    _burst(d, x + 128, y + 22, 17)
+
+
+def art_warsaw(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(168, 182, 198))
+    # THREE big missiles in a row -- the count is the story
+    for j, my in enumerate((6, 17, 28)):
+        d.polygon([(x + 18, y + my + 3), (x + 30, y + my), (x + 92, y + my),
+                   (x + 104, y + my + 3), (x + 92, y + my + 6),
+                   (x + 30, y + my + 6)], fill=(38, 44, 56))
+        d.polygon([(x + 92, y + my), (x + 104, y + my + 3),
+                   (x + 92, y + my + 6)], fill=(200, 40, 36))
+        d.polygon([(x + 18, y + my + 3), (x + 8, y + my - 2),
+                   (x + 10, y + my + 3), (x + 8, y + my + 8)],
+                  fill=(38, 44, 56))
+
+
+def art_istanbul(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(216, 206, 178))
+    # big megaphone + a row of big crowd heads
+    d.polygon([(x + 26, y + 12), (x + 62, y + 4), (x + 62, y + 26),
+               (x + 26, y + 20)], fill=(200, 40, 36))
+    d.rectangle([x + 18, y + 11, x + 27, y + 21], fill=(24, 28, 38))
+    d.rectangle([x + 30, y + 20, x + 37, y + 30], fill=(24, 28, 38))
+    for hx in (76, 98, 120, 142, 164):
+        d.ellipse([x + hx, y + 24, x + hx + 15, y + 39],
+                  fill=(222, 184, 150), outline=(24, 28, 38), width=1)
+        d.rectangle([x + hx - 1, y + 37, x + hx + 16, y + 42],
+                    fill=(52, 84, 140))
+
+
+def art_cikande(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(196, 200, 204))
+    # one simple factory + a BIG flame on top
+    d.rectangle([x + 14, y + 26, x + 104, y + 42], fill=(52, 58, 68))
+    d.rectangle([x + 84, y + 14, x + 96, y + 42], fill=(52, 58, 68))
+    for wx in (24, 42, 60):
+        d.rectangle([x + wx, y + 31, x + wx + 10, y + 38],
+                    fill=(250, 214, 120))
+    _flame(d, x + 46, y + 16, 17)
+
+
+def art_bayelsa(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(170, 198, 214))
+    # one big capsized hull over waves
+    d.polygon([(x + 18, y + 12), (x + 118, y + 12), (x + 102, y + 26),
+               (x + 34, y + 26)], fill=(96, 62, 34))
+    d.rectangle([x + 30, y + 8, x + 106, y + 12], fill=(60, 40, 22))
+    d.rectangle([x, y + 30, x + w, y + h], fill=(38, 92, 140))
+    for wx in (8, 48, 88, 128, 162):
+        d.arc([x + wx, y + 26, x + wx + 26, y + 38], 180, 360,
+              fill=(220, 238, 250), width=3)
+
+
+def art_westbank(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(206, 190, 168))
+    # one big house + a BIG flame (a village home burning)
+    d.rectangle([x + 30, y + 20, x + 86, y + 42], fill=(70, 60, 50))
+    d.polygon([(x + 22, y + 21), (x + 58, y + 6), (x + 94, y + 21)],
+              fill=(120, 44, 36))
+    d.rectangle([x + 51, y + 30, x + 65, y + 42], fill=(30, 26, 22))
+    _flame(d, x + 82, y + 12, 19)
+
+
+def art_gaza(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(188, 178, 168))
+    # ONE huge explosion over a low building silhouette
+    d.rectangle([x + 8, y + 33, x + 130, y + 42], fill=(44, 42, 46))
+    for wx in (20, 44, 68, 92):
+        d.rectangle([x + wx, y + 36, x + wx + 7, y + 40],
+                    fill=(250, 214, 120))
+    _burst(d, x + 66, y + 19, 19)
+
+
+def art_mercury(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(18, 22, 40))
+    # probe: blue panel wings + the big orange planet (kept, enlarged)
+    for px0 in (8, 108):
+        d.rectangle([x + px0, y + 12, x + px0 + 44, y + 30],
+                    fill=(52, 84, 160))
+        for gx in range(1, 4):
+            d.line([x + px0 + gx * 11, y + 12, x + px0 + gx * 11,
+                    y + 30], fill=(140, 170, 220), width=1)
+        d.line([x + px0, y + 21, x + px0 + 44, y + 21],
+               fill=(140, 170, 220), width=1)
+    d.rectangle([x + 52, y + 19, x + 108, y + 23], fill=(200, 204, 214))
+    d.ellipse([x + 66, y + 5, x + 102, y + 41], fill=(232, 130, 52))
+    d.ellipse([x + 76, y + 14, x + 86, y + 24], fill=(198, 104, 40))
+
+
+def art_lasvegas(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(206, 210, 216))
+    # one big F1 car in side profile -- unmistakable
+    ink = (16, 18, 24)
+    d.polygon([(x + 14, y + 26), (x + 52, y + 24), (x + 78, y + 14),
+               (x + 108, y + 14), (x + 128, y + 22), (x + 158, y + 24),
+               (x + 162, y + 28), (x + 128, y + 30), (x + 46, y + 30),
+               (x + 16, y + 29)], fill=ink)
+    d.rectangle([x + 140, y + 6, x + 146, y + 24], fill=ink)
+    d.rectangle([x + 128, y + 6, x + 160, y + 10], fill=(200, 40, 36))
+    d.rectangle([x + 16, y + 16, x + 22, y + 27], fill=(200, 40, 36))
+    d.polygon([(x + 70, y + 14), (x + 84, y + 6), (x + 96, y + 6),
+               (x + 104, y + 14)], fill=ink)
+    for wx in (34, 128):
+        d.ellipse([x + wx, y + 24, x + wx + 17, y + 41], fill=ink)
+        d.ellipse([x + wx + 5, y + 29, x + wx + 12, y + 36],
+                  fill=(150, 156, 166))
+
+
+def art_shanghai(d, x, y, w, h):
+    d.rectangle([x, y, x + w, y + h], fill=(210, 218, 208))
+    # kept diagram, thicker: rising bars + a fat green arrow
+    for j, bh in enumerate((12, 19, 27, 36)):
+        bx = x + 14 + j * 30
+        d.rectangle([bx, y + 42 - bh, bx + 20, y + 42], fill=(52, 84, 140))
+    d.line([x + 10, y + 34, x + 52, y + 24, x + 88, y + 27, x + 128, y + 8],
+           fill=(0, 148, 64), width=5)
+    d.polygon([(x + 128, y + 8), (x + 114, y + 7), (x + 122, y + 19)],
+              fill=(0, 148, 64))
+
+
+STRIP_ART = [art_dymer, art_warsaw, art_istanbul, art_cikande, art_bayelsa,
+             art_westbank, art_gaza, art_mercury, art_lasvegas,
+             art_shanghai]
+
+
 def main():
     stories = HEROES + CARDS + ALSO
     total = len(stories)
@@ -871,18 +1033,10 @@ def main():
         place, region, field, head, deck0, src, sure = card
         x = MX + (i % 5) * (cw + 10)
         yy0 = cy + (i // 5) * (chh + 8)
-        snap = (len(OBSTACLES), len(H_CHECKS), len(OVERFLOWS))
-        tmp = Image.new("RGB", (110, 86), PAPER)
+        tmp = Image.new("RGB", (190, 42), PAPER)
         td = ImageDraw.Draw(tmp)
-        TAG[0] = ("card", i)
-        CARD_SCENES[i](td, 0, 0, 110, 86)
-        TAG[0] = None
-        del OBSTACLES[snap[0]:]
-        del H_CHECKS[snap[1]:]
-        del OVERFLOWS[snap[2]:]
-        big_img = tmp.resize((192, 150), Image.LANCZOS)
-        img.paste(big_img.crop((0, CROPS[i], 192, CROPS[i] + 42)),
-                  (x + 1, yy0 + 1))
+        STRIP_ART[i](td, 0, 0, 190, 42)
+        img.paste(tmp, (x + 1, yy0 + 1))
         d.rounded_rectangle([x, yy0, x + cw, yy0 + 43], radius=4,
                             outline=(120, 112, 96), width=1)
         flag(d, CARD_FLAGS[i], x + 5, yy0 + 5, w=24, h=16)
