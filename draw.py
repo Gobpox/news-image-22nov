@@ -5,7 +5,10 @@ Geometry first (GATES.md, approved by Ahmad 2026-11-22): the grid and
 the type floors were locked before the story count — hero headlines
 >= 30px, card headlines >= 19px, brief headlines >= 16px, brief text
 >= 14px, in-scene labels >= 13px, at most 3 heroes, briefs <= 9 words
-over 2 lines. 27 stories fit those floors: 3 heroes + 12 cards + 12 briefs.
+over 2 lines. DENSITY CUT (ni21 jury verdict: density/craft at 300px was
+the only repeated criticism): 23 stories — 3 heroes + 12 cards + 8 briefs —
+with card headlines at 21px, brief headlines at 17px, brief text at 15px,
+all above the floors, and more air between panels.
 
 Every important number is read from figures.json (the registry); no
 panel types a figure freehand. The strap counts, the region tally and
@@ -69,7 +72,7 @@ CARDS = [
      "A block collapses in Dymer; Zelensky asks the US for Patriots.",
      "Al Jazeera", "R"),
     ("WARSAW", "EUR", "Diplomacy",
-     "Poland: all three were Kh-101 missiles",
+     "Poland: all three Kh-101 missiles",
      "Prosecutors say the objects that fell on Friday were Russian "
      "cruise missiles; NATO meets Monday.", "Reuters", "C"),
     ("ISTANBUL", "EUR", "Politics",
@@ -85,7 +88,7 @@ CARDS = [
      "NEMA says 24 bodies are recovered after the Bayelsa capsize; "
      "search goes on.", "Reuters", "C"),
     ("WEST BANK", "MEA", "Conflict",
-     "Settlers torch villages in the West Bank",
+     "Settlers torch West Bank villages",
      "Fires and racist graffiti in four villages early Sunday; "
      "Eisenkot calls it terrorism.", "Reuters", "C"),
     ("KHAN YOUNIS", "MEA", "Conflict",
@@ -93,7 +96,7 @@ CARDS = [
      "Medics say an Israeli strike on Khan Younis kills two on Sunday.",
      "Medics", "R"),
     ("MERCURY", "GLO", "Science",
-     "BepiColombo reaches Mercury orbit",
+     "BepiColombo reaches Mercury",
      "ESA confirms capture at 00:56 UTC after "
      + FIG["bepicolombo_years"] + " years; orbiters split in December.",
      "ESA", "C"),
@@ -102,11 +105,11 @@ CARDS = [
      "Beats world No. 1 Zverev 6-2, 7-6(7) in Turin on Sunday.",
      "ATP", "C"),
     ("LAS VEGAS", "AME", "Sport",
-     "Verstappen wins a 35-lead-change classic",
+     "Verstappen's 35-lead-change win",
      "Holds off Norris by " + FIG["vegas_margin"] + "s in Las Vegas; "
      "Piastri third.", "F1", "C"),
     ("WASHINGTON", "AME", "Diplomacy",
-     "Trump seeks a 'permanent' Iran deal",
+     "Trump seeks 'permanent' deal",
      "Tells Fox he wants a lasting no-nukes deal; warns of strikes "
      "after the New Year.", "Fox", "R"),
     ("SHANGHAI", "ASI", "Economy",
@@ -117,34 +120,26 @@ CARDS = [
 ]
 
 # Briefs: (place, region, field, headline, text) — headline + text <= 9 words.
-# v3: 12 briefs; the map panel took the rest of the brief area (see
-# STORIES.md v3 cut note). Letters were never shrunk to fit.
+# 8 briefs after the density cut (Hull, Paris, Gilroy, Milan dropped —
+# duplicate themes/minor sport). Letters were never shrunk to fit.
 BRIEFS = [
     ("KRYVYI RIH", "EUR", "Conflict", "Toll rises to 73",
      FIG["kryvyi_injured"] + " hurt, " + FIG["kryvyi_children"]
      + " children · AP"),
-    ("HORMUZ", "MEA", "Conflict", FIG["hormuz_week"] + " tankers in a week",
+    ("HORMUZ", "MEA", "Conflict", FIG["hormuz_week"] + " tankers in week",
      FIG["kharg_tankers"] + " more wait at Kharg · AJ"),
     ("NEW YORK", "AME", "Tech", "AI-chip spy bid",
      "NYT reports the campaign · NYT"),
-    ("LIVERPOOL", "EUR", "Sport", "4-0 over Man Utd",
+    ("LIVERPOOL", "EUR", "Sport", "4-0 over Utd",
      "Pochettino debut spoiled · BBC"),
-    ("HULL", "EUR", "Sport", "Hull 2-0 Brighton",
-     "McBurnie brace late on · BBC"),
-    ("PARIS", "EUR", "Sport", "Doué out with ACL tear",
-     "PSG confirm surgery ahead · AFP"),
     ("SYDNEY", "ASI", "Politics", "US lead narrows",
      "Lowy power index out · Lowy"),
-    ("GILROY", "AME", "Politics", "Protest over ICE",
-     "Activists rally in Gilroy · KPFA"),
     ("SEATTLE", "AME", "Politics", "ICE takes two",
      "Masked agents in Seattle · KPFA"),
     ("MADRID", "EUR", "Sport", "Real fight back",
      "Comeback beats Celta · La Liga"),
-    ("ADDIS ABABA", "AFR", "Climate", "COP32 inherits",
+    ("ADDIS ABABA", "AFR", "Climate", "COP32's turn",
      "Items carry over · Guardian"),
-    ("MILAN", "EUR", "Sport", "Milan hit five",
-     "Amorim's side rout Frosinone · Serie A"),
 ]
 
 # ------------------------------------------------------------- world map
@@ -872,7 +867,7 @@ def main():
                    max_lines=2, tag=f"herodeck{i}")
     # ---------------------------------------------------------- cards
     cy = hy + hh + 3
-    chh, chw = 83, hw
+    chh, chw = 88, hw
     for i, card in enumerate(CARDS):
         place, region, field, head, deck, src, sure = card
         x = 16 + (i % 3) * (chw + 8)
@@ -908,9 +903,9 @@ def main():
         cmeta = f"{src} - {SURE_LABEL[sure]}"
         d.text((mx, yy0 + 7), cmeta, font=SANS(9), fill=MUTE)
         check_h(f"card{i+4} meta", cmeta, SANS(9), mx, x + chw - 6)
-        text_block(d, tx, yy0 + 16, head, SERIF(19), INK, chw - 123, 22,
+        text_block(d, tx, yy0 + 16, head, SERIF(21), INK, chw - 123, 24,
                    max_lines=2, tag=f"card{i}")
-        d.text((tx, yy0 + 65), CARD_INFO[i], font=SANS(13),
+        d.text((tx, yy0 + 70), CARD_INFO[i], font=SANS(13),
                fill=(52, 48, 42))
         check_h(f"card{i+4} info", CARD_INFO[i], SANS(13), tx, x + chw - 6)
     by = cy + 3 * chh + chh + 2
@@ -925,16 +920,16 @@ def main():
         col = i % 2
         row = i // 2
         x = 16 + col * (colw + 10)
-        yy = sec_y + 19 + row * 36
+        yy = sec_y + 19 + row * 48
         d.rectangle([x, yy + 3, x + 9, yy + 12], fill=REGIONS[region][1])
-        d.text((x + 14, yy), place, font=SANS_B(16), fill=REGIONS[region][1])
-        px = x + 14 + d.textlength(place, font=SANS_B(16)) + 6
-        if px + d.textlength(head, font=SANS_B(16)) > x + colw:
+        d.text((x + 14, yy), place, font=SANS_B(17), fill=REGIONS[region][1])
+        px = x + 14 + d.textlength(place, font=SANS_B(17)) + 6
+        if px + d.textlength(head, font=SANS_B(17)) > x + colw:
             OVERFLOWS.append(f"brief{i} headline too wide: {place} {head[:30]}")
-        if d.textlength(text, font=SANS(14)) > colw - 14:
+        if d.textlength(text, font=SANS(15)) > colw - 14:
             OVERFLOWS.append(f"brief{i} text too wide: {text[:30]}")
-        d.text((px, yy), head, font=SANS_B(16), fill=INK)
-        d.text((x + 14, yy + 20), text, font=SANS(14), fill=(52, 48, 42))
+        d.text((px, yy), head, font=SANS_B(17), fill=INK)
+        d.text((x + 14, yy + 26), text, font=SANS(15), fill=(52, 48, 42))
 
     # map panel: pins carry the story numbers of heroes (1-3) and cards (4-15)
     mx0, my0, mx1 = 552, sec_y, 1008
@@ -945,7 +940,7 @@ def main():
             SANS_B(12), mx0 + 8, mx1 - 8)
     check_h("briefs header", f"THE REST OF SUNDAY — {len(BRIEFS)} BRIEFS",
             SANS_B(12), 22, 536 - 8)
-    map_y, map_h, map_w = sec_y + 22, 164, mx1 - mx0 - 16
+    map_y, map_h, map_w = sec_y + 22, 174, mx1 - mx0 - 16
     map_x = mx0 + 8
     d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h], fill=(16, 26, 44))
     cw, chh2 = map_w / 68, map_h / 30
@@ -973,7 +968,7 @@ def main():
            "PINS NUDGED APART", font=SANS_B(11), fill=MUTE)
     check_h("map caption", "11 MERCURY — OFF THE MAP, IN SPACE · EUROPE "
             "PINS NUDGED APART", SANS_B(11), mx0 + 8, mx1 - 8)
-    by = sec_y + 238
+    by = sec_y + 218
 
     # ------------------------------------------------- numbers + bars
     d.line([16, by, W - 16, by], fill=INK, width=2)
