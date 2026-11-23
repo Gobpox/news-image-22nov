@@ -6,8 +6,8 @@ the type floors were locked before the story count — hero headlines
 >= 30px, card headlines >= 19px, brief headlines >= 16px, brief text
 >= 14px, in-scene labels >= 13px, at most 3 heroes, briefs <= 9 words
 over 2 lines. STRUCTURE (from the ni21 top-10 artefacts, counted directly:
-35-43 stories each): 35 stories — 3 heroes + 12 cards pictured large, plus
-a 20-line ALSO rail of one-line briefs at 14px. Card headlines at 21px.
+35-43 stories each): 35 stories — 3 heroes + 10 cards pictured large, plus
+a 22-line ALSO rail of one-line briefs at 14px. Card headlines at 21px.
 
 Every important number is read from figures.json (the registry); no
 panel types a figure freehand. The strap counts, the region tally and
@@ -99,18 +99,10 @@ CARDS = [
      "ESA confirms capture at 00:56 UTC after "
      + FIG["bepicolombo_years"] + " years; orbiters split in December.",
      "ESA", "C"),
-    ("TURIN", "EUR", "Sport",
-     "Alcaraz wins his first ATP Finals",
-     "Beats world No. 1 Zverev 6-2, 7-6(7) in Turin on Sunday.",
-     "ATP", "C"),
     ("LAS VEGAS", "AME", "Sport",
      "Verstappen's 35-lead-change win",
      "Holds off Norris by " + FIG["vegas_margin"] + "s in Las Vegas; "
      "Piastri third.", "F1", "C"),
-    ("WASHINGTON", "AME", "Diplomacy",
-     "Trump seeks 'permanent' deal",
-     "Tells Fox he wants a lasting no-nukes deal; warns of strikes "
-     "after the New Year.", "Fox", "R"),
     ("SHANGHAI", "ASI", "Economy",
      "China eases margin rules to lift stocks",
      "Exchanges cut the minimum margin ratio to "
@@ -119,7 +111,7 @@ CARDS = [
 ]
 
 # ALSO rail: (place, region, field, fact, source) — one line per story,
-# numbered 16-35. This is the top-10 winners' structure from edition 21:
+# numbered 14-35. This is the top-10 winners' structure from edition 21:
 # density is quarantined in this one-line rail while the pictured layer
 # (heroes + cards) stays large and airy.
 ALSO = [
@@ -127,6 +119,8 @@ ALSO = [
      FIG["kryvyi_injured"] + " hurt, " + FIG["kryvyi_children"] + " children", "AP"),
     ("HORMUZ", "MEA", "Conflict",
      FIG["hormuz_week"] + " tankers hit in week", "AJ"),
+    ("TURIN", "EUR", "Sport", "Alcaraz beats Zverev 6-2", "ATP"),
+    ("WASHINGTON", "AME", "Diplomacy", "Trump: 'permanent'", "Fox"),
     ("NEW YORK", "AME", "Tech", "AI-chip spy bid", "NYT"),
     ("LIVERPOOL", "EUR", "Sport", "4-0 over Man Utd", "BBC"),
     ("HULL", "EUR", "Sport", "2-0 Brighton, late brace", "BBC"),
@@ -189,8 +183,7 @@ PINS = [
     (1, 31, 37, 16, 20), (2, 50, 26, 30, 36), (3, 20, 32, -30, -14),
     (4, 30, 50, 30, -6), (5, 21, 52, -28, -16), (6, 29, 41, -30, 18),
     (7, 106, -6, 0, 0), (8, 6, 5, -40, 30), (9, 35, 32, -24, 30),
-    (10, 34, 31, 24, 34), (12, 8, 45, -30, 30), (13, -115, 36, 0, 0),
-    (14, -77, 39, 0, 0), (15, 121, 31, 0, 0),
+    (10, 34, 31, 24, 34), (12, -115, 36, 0, 0), (13, 121, 31, 0, 0),
 ]
 
 TIMELINE = [("00:56", "Bepi in orbit"), ("05:28", "Two killed in Gaza"),
@@ -571,15 +564,12 @@ CARD_INFO = [
     FIG["westbank_villages"] + " villages attacked",
     FIG["gaza_killed_sunday"] + " killed Sunday",
     "Orbit burn after " + FIG["bepicolombo_years"] + " years' flight",
-    "6-2, 7-6(7) in the final",
     FIG["vegas_lead_changes"] + " lead changes; " + FIG["vegas_margin"]
     + "s margin",
-    "Deal 'permanent'; strikes warned",
     FIG["china_margin_new"] + " margin from 30 Nov",
 ]
 
-CARD_FLAGS = ["UA", "PL", "TR", "ID", "NG", "PS", "PS", "EU", "IT", "US",
-              "US", "CN"]
+CARD_FLAGS = ["UA", "PL", "TR", "ID", "NG", "PS", "PS", "EU", "US", "CN"]
 HERO_FLAGS = ["TR", "BH", "LY"]
 
 
@@ -877,19 +867,20 @@ def main():
         place, region, field, head, deck, src, sure = card
         x = 16 + (i % 3) * (chw + 8)
         yy0 = cy + (i // 3) * chh
-        d.rectangle([x, yy0, x + chw, yy0 + chh], fill=(255, 253, 246),
+        effw = chw * 2 + 8 if i == len(CARDS) - 1 else chw
+        d.rectangle([x, yy0, x + effw, yy0 + chh], fill=(255, 253, 246),
                     outline=(150, 142, 126), width=1)
         for seg, lab in (
-                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
+                ((x, yy0, x + effw, yy0), f"card{i+4} top"),
+                ((x, yy0 + chh, x + effw, yy0 + chh), f"card{i+4} bottom"),
                 ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
+                ((x + effw, yy0, x + effw, yy0 + chh), f"card{i+4} right")):
             LINES.append((seg, lab))
         for seg, lab in (
-                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
+                ((x, yy0, x + effw, yy0), f"card{i+4} top"),
+                ((x, yy0 + chh, x + effw, yy0 + chh), f"card{i+4} bottom"),
                 ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
+                ((x + effw, yy0, x + effw, yy0 + chh), f"card{i+4} right")):
             LINES.append((seg, lab))
         TAG[0] = ("card", i)
         CARD_SCENES[i](d, x + 1, yy0 + 1, 110, chh - 2)
@@ -907,27 +898,27 @@ def main():
         mx = tx + 22 + d.textlength(place, font=SANS_B(10)) + 7
         cmeta = f"{src} - {SURE_LABEL[sure]}"
         d.text((mx, yy0 + 7), cmeta, font=SANS(9), fill=MUTE)
-        check_h(f"card{i+4} meta", cmeta, SANS(9), mx, x + chw - 6)
-        text_block(d, tx, yy0 + 16, head, SERIF(21), INK, chw - 123, 24,
+        check_h(f"card{i+4} meta", cmeta, SANS(9), mx, x + effw - 6)
+        text_block(d, tx, yy0 + 16, head, SERIF(21), INK, effw - 123, 24,
                    max_lines=2, tag=f"card{i}")
         d.text((tx, yy0 + 70), CARD_INFO[i], font=SANS(13),
                fill=(52, 48, 42))
-        check_h(f"card{i+4} info", CARD_INFO[i], SANS(13), tx, x + chw - 6)
+        check_h(f"card{i+4} info", CARD_INFO[i], SANS(13), tx, x + effw - 6)
     by = cy + 3 * chh + chh + 2
 
     # -------------------------------------- ALSO rail (left) + map (right)
     sec_y = by
-    d.rectangle([16, sec_y, 632, sec_y + 16], fill=NAVY)
-    d.text((22, sec_y + 2), f"ALSO ON SUNDAY — {len(ALSO)} MORE STORIES",
+    d.rectangle([16, sec_y, 644, sec_y + 16], fill=NAVY)
+    d.text((22, sec_y + 2), f"ALSO ON SUNDAY 22 NOVEMBER — {len(ALSO)} MORE",
            font=SANS_B(12), fill=(255, 255, 255))
-    colw = (632 - 16 - 16) // 2
+    colw = (644 - 16 - 8) // 2
     for i, (place, region, field, fact, src) in enumerate(ALSO):
         col = i % 2
         row = i // 2
-        x = 16 + col * (colw + 16)
-        yy = sec_y + 22 + row * 19
+        x = 16 + col * (colw + 8)
+        yy = sec_y + 19 + row * 18
         d.rectangle([x, yy + 4, x + 7, yy + 11], fill=REGIONS[region][1])
-        head = f"{i + 16} {place} — "
+        head = f"{i + 14} {place} — "
         d.text((x + 11, yy), head, font=SANS_B(14),
                fill=REGIONS[region][1])
         px = x + 15 + d.textlength(head, font=SANS_B(14))
@@ -943,8 +934,8 @@ def main():
            font=SANS_B(12), fill=(255, 255, 255))
     check_h("map header", "WHERE IT HAPPENED — PIN = STORY NUMBER",
             SANS_B(12), mx0 + 8, mx1 - 8)
-    check_h("also header", f"ALSO ON SUNDAY — {len(ALSO)} MORE STORIES",
-            SANS_B(12), 22, 632 - 8)
+    check_h("also header", f"ALSO ON SUNDAY 22 NOVEMBER — {len(ALSO)} MORE",
+            SANS_B(12), 22, 644 - 8)
     map_y, map_h, map_w = sec_y + 22, 174, mx1 - mx0 - 16
     map_x = mx0 + 8
     d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h], fill=(16, 26, 44))
@@ -1312,8 +1303,7 @@ def sc_shanghai(d, x, y, w, h):
 
 
 CARD_SCENES = [sc_dymer, sc_warsaw, sc_istanbul, sc_cikande, sc_bayelsa,
-               sc_westbank, sc_gaza, sc_mercury, sc_turin, sc_lasvegas,
-               sc_washington, sc_shanghai]
+               sc_westbank, sc_gaza, sc_mercury, sc_lasvegas, sc_shanghai]
 
 
 
