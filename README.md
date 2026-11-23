@@ -20,14 +20,17 @@ deterministic bytes.
 
 ## Structure note
 
-Edition 21's top 10 were counted directly from their artefacts: 35-43
-stories each, built as pictured stories over a dense one-line "ALSO"
-rail. This entry locks exactly 35: 3 heroes + 10 cards in the winners'
-compact format (5 across x 2 rows: native-size scene, number/flag/
-place/source column, 20px headline, merged deck) plus a 22-line ALSO
-ON SUNDAY 22 NOVEMBER rail of numbered one-line briefs (place, key
-fact, source) at 14px, the brief-text floor. Density is quarantined
-in the rail; the pictured layer stays airy.
+The layout clones, zone by zone, the measured template of edition
+21's final winner (superskie): eyebrow with computed counts and a red
+rule, giant Playfair date, a "THE DAY IN UTC" timeline bar, hero
+panels with an in-scene red statement band, numbered kickers and
+status chips, compact 5-across x 2-row cards (scene strip, flag,
+status chip, big overlay, headline, merged deck), a left map with
+region-coloured pins and a counted dot legend beside a two-column
+ALSO rail, a red-framed DATE CHECK box with tab, and a footer with
+the HOW SURE legend and sources line. The story set is locked at
+exactly 35 (3 heroes + 10 cards + 22 ALSO briefs); all overlap
+audits, the figures registry check and the 300px gate run clean.
 
 ## License
 

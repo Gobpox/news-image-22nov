@@ -181,14 +181,14 @@ LAND_SPANS = [
 # dx, dy) — dx/dy nudge cluster pins apart, with a leader dot left behind.
 PINS = [
     (1, 31, 37, 16, 20), (2, 50, 26, 30, 36), (3, 20, 32, -30, -14),
-    (4, 30, 50, 30, -6), (5, 21, 52, -28, -16), (6, 29, 41, -30, 18),
+    (4, 30, 50, 30, -6), (5, 21, 52, -28, -10), (6, 29, 41, -30, 18),
     (7, 106, -6, 0, 0), (8, 6, 5, -40, 30), (9, 35, 32, -24, 30),
     (10, 34, 31, 24, 34), (12, -115, 36, 0, 0), (13, 121, 31, 0, 0),
 ]
 
 TIMELINE = [("00:56", "Bepi in orbit"), ("05:28", "Two killed in Gaza"),
             ("08:28", "Kryvyi toll 73"), ("12:48", "Nigeria toll 24"),
-            ("14:48", "Zelensky: send Patriots"),
+            ("14:48", "Zelensky: Patriots"),
             ("17:18", "Poland: 3 Kh-101"), ("19:17", "Alcaraz wins Turin")]
 
 NUMBERS = [(FIG["cop31_overtime"], "hours of overtime"),
@@ -670,7 +670,6 @@ def scene_antalya(d, x, y, w, h):
         d.ellipse([xx, y + 34, xx + 15, y + 48], fill=(222, 184, 150))
         d.rectangle([xx - 2, y + 48, xx + 17, y + 54], fill=RED)
     d.rectangle([x + w // 2 - 9, y + 38, x + w // 2 + 9, y + 63], fill=NAVY)
-    scene_label(d, x, y, w, "ANTALYA — TALKS HALL")
 
 
 def scene_bahrain(d, x, y, w, h):
@@ -704,7 +703,6 @@ def scene_bahrain(d, x, y, w, h):
                   fill=(255, 140, 40))
     d.ellipse([x + 256, y + 8, x + 282, y + 26], fill=(90, 90, 100))
     d.ellipse([x + 266, y + 2, x + 288, y + 16], fill=(70, 70, 80))
-    scene_label(d, x, y, w, "BAHRAIN — US BASES")
 
 
 def scene_benghazi(d, x, y, w, h):
@@ -729,7 +727,6 @@ def scene_benghazi(d, x, y, w, h):
     d.polygon([(x + 20, y + 52), (x + 30, y + 46), (x + 52, y + 46),
                (x + 58, y + 52)], fill=(30, 34, 44))
     d.rectangle([x + 34, y + 40, x + 40, y + 46], fill=(200, 60, 40))
-    scene_label(d, x, y, w, "BENGHAZI — THE HARBOUR")
 
 
 
@@ -761,252 +758,280 @@ def tally_bar(d, y, counts, total, x0=76, x1=560, hgt=13):
 
 
 def main():
+    stories = HEROES + CARDS + ALSO
+    total = len(stories)
+    reg_counts = {}
+    field_counts = {}
+    for (region, field) in all_stories():
+        reg_counts[region] = reg_counts.get(region, 0) + 1
+        field_counts[field] = field_counts.get(field, 0) + 1
+
     img = Image.new("RGB", (W, H), PAPER)
     d = RecDraw(ImageDraw.Draw(img))
-    stories = all_stories()
-    total = len(stories)
-    reg_counts, field_counts = {}, {}
-    for r, f in stories:
-        reg_counts[r] = reg_counts.get(r, 0) + 1
-        field_counts[f] = field_counts.get(f, 0) + 1
+    MX, RX = 12, W - 12
+    SURE_COLORS = {"C": (26, 118, 60), "R": (186, 44, 36),
+                   "W": (176, 110, 16), "S": (70, 90, 140),
+                   "G": (0, 128, 110)}
 
-    # ---------------------------------------------------------- masthead
-    # v3.4: newspaper head in the winners' typographic system (refs:
-    # ni21 dev top-1/2) — tracked small-caps eyebrow row with the counts
-    # on the right, a giant title-case serif date, an italic summary
-    # strap naming the day's three hero stories, double rules with a
-    # red diamond, all on paper so head and body are one page.
-    eyebrow = "THE WORLD IN ONE PICTURE"
-    counts = (f"{total} STORIES \u00b7 {len(reg_counts)} REGIONS \u00b7 "
-              "EVERY STORY DATED TO THE DAY")
-    tracked(d, 16, 7, eyebrow, SANS_B(12), RED, tracking=3)
-    cw_counts = tracked_width(d, counts, SANS_B(11), 2)
-    tracked(d, W - 16 - cw_counts, 8, counts, SANS_B(11), INK, tracking=2)
-    H_CHECKS.append(("eyebrow row overlap", round(
-        (16 + tracked_width(d, eyebrow, SANS_B(12), 3))
-        - (W - 16 - cw_counts), 1)))
-    d.line([16, 25, W - 16, 25], fill=INK, width=1)
-    strap = ("COP31 ends with no deal \u00b7 Iran strikes US bases in "
-             "Bahrain \u00b7 Russian warship sunk in Libya")
-    # v3.5: pack date -> strap -> rules by MEASURED ink bboxes, with a
-    # guaranteed >=6px clear gap at each step (Ahmad: no descender of
-    # the date may touch the strap; no strap descender may touch the
-    # rule). Shrink the date until the whole stack fits above y=163.
-    sbb = d.textbbox((0, 0), strap, font=SERIF_IT(17))
-    for S in range(78, 59, -1):
-        fnt = SERIF_BLACK(S)
-        if d.textlength("Sunday 22 November 2026", font=fnt) > 964:
-            continue
-        bb = d.textbbox((0, 0), "Sunday 22 November 2026", font=fnt)
-        date_y = 31 - bb[1]
-        date_ink_bot = date_y + bb[3]
-        strap_y = date_ink_bot + 3 - sbb[1]
-        strap_ink_bot = strap_y + sbb[3]
-        rule1 = strap_ink_bot + 3
-        if rule1 + 4 + 8 + 20 <= 158:
-            break
-    date_font = fnt
-    print(f"MASTHEAD-PACK: date {S}px width "
-          f"{round(d.textlength('Sunday 22 November 2026', font=fnt))}px; "
-          f"date ink bottom {date_ink_bot}, strap ink top "
-          f"{strap_y + sbb[1]} -> gap {strap_y + sbb[1] - date_ink_bot}px; "
-          f"strap ink bottom {strap_ink_bot}, rule at {rule1} "
-          f"-> gap {rule1 - strap_ink_bot}px")
-    center(d, date_y, "Sunday 22 November 2026", date_font, INK)
-    check_h("masthead date", "Sunday 22 November 2026", date_font,
-            W // 2 - d.textlength("Sunday 22 November 2026",
-                                  font=date_font) / 2, W - 30)
-    center(d, strap_y, strap, SERIF_IT(17), INK)
-    check_h("summary strap", strap, SERIF_IT(17),
-            W // 2 - d.textlength(strap, font=SERIF_IT(17)) / 2, W - 16)
-    d.line([16, rule1, W - 16, rule1], fill=INK, width=1)
-    d.line([16, rule1 + 4, W - 16, rule1 + 4], fill=INK, width=3)
-    d.rectangle([W // 2 - 14, rule1 - 2, W // 2 + 14, rule1 + 10], fill=PAPER)
-    d.polygon([(W // 2, rule1 - 1), (W // 2 + 6, rule1 + 4),
-               (W // 2, rule1 + 9), (W // 2 - 6, rule1 + 4)], fill=RED)
-    tl = "SUNDAY IN UTC:  " + "  \u00b7  ".join(f"{t} {l}" for t, l in TIMELINE)
-    d.rectangle([0, rule1 + 12, W, rule1 + 28], fill=RED)
-    center(d, rule1 + 15, tl, SANS_B(10), (255, 255, 255))
-    check_h("timeline", tl, SANS_B(10),
-            W // 2 - d.textlength(tl, font=SANS_B(10)) / 2, W - 8)
+    # -------------------------------- masthead (superskie template)
+    land = sum(1 for c in reg_counts if c != "GLO")
+    eye_r = (f"{total} STORIES \u00b7 {land} REGIONS + SPACE \u00b7 "
+             f"{len(field_counts)} FIELDS \u00b7 ALL FROM THIS SUNDAY")
+    d.text((MX, 8), "ONE DAY OF WORLD NEWS, ONE PICTURE",
+           font=SANS_B(15), fill=RED)
+    rw = d.textlength(eye_r, font=SANS_B(15))
+    d.text((RX - rw, 8), eye_r, font=SANS_B(15), fill=INK)
+    check_h("eyebrow left", "ONE DAY OF WORLD NEWS, ONE PICTURE",
+            SANS_B(15), MX, RX - rw - 8)
+    d.rectangle([MX, 30, RX, 33], fill=RED)
+    date = "Sunday 22 November 2026"
+    dw = d.textlength(date, font=SERIF(66))
+    d.text(((W - dw) / 2, 28), date, font=SERIF(66), fill=INK)
+    d.line([MX, 116, RX, 116], fill=INK, width=2)
+    LINES.append(((MX, 116, RX, 116), "date rule"))
 
-    # ---------------------------------------------------------- heroes
-    hy, hh = 156, 207
-    hw = (W - 32 - 16) // 3
+    # -------------------------------- timeline: THE DAY IN UTC
+    ty = 122
+    d.rectangle([MX, ty, MX + 64, ty + 46], fill=RED)
+    for j, s in enumerate(("THE DAY", "IN UTC")):
+        tw = d.textlength(s, font=SANS_B(12))
+        d.text((MX + 32 - tw / 2, ty + 7 + j * 16), s, font=SANS_B(12),
+               fill=(255, 255, 255))
+    col_x = MX + 72
+    colw = (RX - col_x) // 7
+    for i, (tm, cap) in enumerate(TIMELINE):
+        cx = col_x + i * colw
+        tw = d.textlength(tm, font=SANS_B(19))
+        d.text((cx + colw / 2 - tw / 2, ty + 1), tm, font=SANS_B(19),
+               fill=RED)
+        lw = d.textlength(cap, font=SANS(11))
+        d.text((cx + colw / 2 - lw / 2, ty + 27), cap, font=SANS(11),
+               fill=(52, 48, 42))
+        check_h(f"tl cap {i}", cap, SANS(11), cx + colw / 2 - lw / 2,
+                cx + colw - 4)
+        if i:
+            LINES.append(((cx - 5, ty + 4, cx - 5, ty + 42), f"tl sep {i}"))
+    d.line([MX, ty + 50, RX, ty + 50], fill=(150, 142, 126), width=1)
+    LINES.append(((MX, ty + 50, RX, ty + 50), "timeline rule"))
+
+    # -------------------------------- heroes: banner scene + band,
+    # numbered kicker + status chip, big serif headline, 2-line deck
+    hy = 178
+    hw = (RX - MX - 26) // 3
     for i, hero in enumerate(HEROES):
-        x = 16 + i * (hw + 8)
         place, region, field, head, deck, src, sure, big, biglab = hero
-        d.rectangle([x, hy, x + hw, hy + hh], fill=(255, 253, 246),
-                    outline=INK, width=2)
-        for seg, lab in (
-                ((x, hy, x + hw, hy), f"hero{i+1} top"),
-                ((x, hy + hh, x + hw, hy + hh), f"hero{i+1} bottom"),
-                ((x, hy, x, hy + hh), f"hero{i+1} left"),
-                ((x + hw, hy, x + hw, hy + hh), f"hero{i+1} right")):
-            LINES.append((seg, lab))
-        for seg, lab in (
-                ((x, hy, x + hw, hy), f"hero{i+1} top"),
-                ((x, hy + hh, x + hw, hy + hh), f"hero{i+1} bottom"),
-                ((x, hy, x, hy + hh), f"hero{i+1} left"),
-                ((x + hw, hy, x + hw, hy + hh), f"hero{i+1} right")):
-            LINES.append((seg, lab))
+        x = MX + i * (hw + 13)
         TAG[0] = ("hero", i)
-        HERO_SCENES[i](d, x + 3, hy + 3, hw - 6, 66)
+        HERO_SCENES[i](d, x, hy, hw, 96)
         TAG[0] = None
-        yy = hy + 76
-        badge(d, x + 8, yy, i + 1, region)
-        flag(d, HERO_FLAGS[i], x + 40, yy + 1)
-        d.text((x + 82, yy + 2), place, font=SANS_B(12), fill=REGIONS[region][1])
-        check_h(f"hero{i+1} place", place, SANS_B(12), x + 82, x + hw - 8)
-        meta = f"{field.upper()} - {src} - {SURE_LABEL[sure]}"
-        d.text((x + 82, yy + 19), meta, font=SANS(10), fill=MUTE)
-        check_h(f"hero{i+1} meta", meta, SANS(10), x + 82, x + hw - 8)
-        yy += 24
-        yy = text_block(d, x + 8, yy, head, SERIF(30), INK, hw - 16, 33,
-                        max_lines=2, tag=f"hero{i}")
-        text_block(d, x + 8, yy + 7, deck, SANS(13), (52, 48, 42), hw - 16, 16,
-                   max_lines=2, tag=f"herodeck{i}")
-    # ---------------------------------------------------------- cards
-    # compact winners' format: 5 across x 2 rows; native-size scene at
-    # the left, number/flag/place/source column beside it, headline and
-    # a merged deck (deck + key-fact line fused) below. 2 rows x 176px
-    # = the old 4 rows x 88px, so nothing below this block moves.
-    cy = hy + hh + 3
-    chh, chw = 182, (W - 32 - 32) // 5
+        band = f"{place.split(',')[0]} \u2014 {big} {biglab}"
+        d.rectangle([x, hy + 75, x + hw, hy + 96], fill=(176, 32, 28))
+        bw = d.textlength(band, font=SANS_B(13))
+        d.text((x + (hw - bw) / 2, hy + 79), band, font=SANS_B(13),
+               fill=(255, 255, 255))
+        check_h(f"hero{i+1} band", band, SANS_B(13),
+                x + (hw - bw) / 2, x + hw - 4)
+        ky = hy + 102
+        col = REGIONS[region][1]
+        d.ellipse([x + 1, ky, x + 19, ky + 18], fill=col)
+        num = str(i + 1)
+        nw = d.textlength(num, font=SANS_B(12))
+        d.text((x + 10 - nw / 2, ky + 2), num, font=SANS_B(12),
+               fill=(255, 255, 255))
+        kick = place.replace(", ", " \u00b7 ")
+        d.text((x + 25, ky + 1), kick, font=SANS_B(14), fill=col)
+        chip_t = f"{SURE_LABEL[sure]} \u00b7 {src}"
+        chw2 = d.textlength(chip_t, font=SANS_B(10)) + 14
+        scol = SURE_COLORS[sure]
+        d.rounded_rectangle([x + hw - chw2, ky - 1, x + hw, ky + 17],
+                            radius=4, outline=scol, width=2)
+        d.text((x + hw - chw2 + 7, ky + 2), chip_t, font=SANS_B(10),
+               fill=scol)
+        check_h(f"hero{i+1} kicker", kick, SANS_B(14), x + 25,
+                x + hw - chw2 - 6)
+        text_block(d, x, ky + 22, head, SERIF(29), INK, hw - 2, 32,
+                   max_lines=2, tag=f"hero{i}")
+        text_block(d, x, ky + 94, deck, SANS(13), (52, 48, 42), hw - 2,
+                   17, max_lines=2, tag=f"herodeck{i}")
+
+    # -------------------------------- cards: 5 across x 2 rows,
+    # scene strip on top with flag, status chip and a big overlay
+    cy = 414
+    cw = (RX - MX - 40) // 5
+    chh = 142
+    OVERLAYS = [FIG["ukraine_killed_sunday"] + " KILLED",
+                FIG["poland_missiles"] + " " + FIG["kh101_model"],
+                "FREE PRESS", FIG["cikande_missing"] + " MISSING",
+                FIG["bayelsa_dead"] + " DEAD",
+                FIG["westbank_villages"] + " VILLAGES",
+                FIG["gaza_killed_sunday"] + " KILLED", "MERCURY",
+                FIG["vegas_margin"] + "s", FIG["china_margin_new"]]
+    CROPS = [42, 18, 40, 42, 48, 40, 42, 36, 42, 38]
     for i, card in enumerate(CARDS):
         place, region, field, head, deck0, src, sure = card
-        x = 16 + (i % 5) * (chw + 8)
-        yy0 = cy + (i // 5) * chh
-        d.rectangle([x, yy0, x + chw, yy0 + chh], fill=(255, 253, 246),
-                    outline=(150, 142, 126), width=1)
-        for seg, lab in (
-                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
-                ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
-            LINES.append((seg, lab))
-        for seg, lab in (
-                ((x, yy0, x + chw, yy0), f"card{i+4} top"),
-                ((x, yy0 + chh, x + chw, yy0 + chh), f"card{i+4} bottom"),
-                ((x, yy0, x, yy0 + chh), f"card{i+4} left"),
-                ((x + chw, yy0, x + chw, yy0 + chh), f"card{i+4} right")):
-            LINES.append((seg, lab))
+        x = MX + (i % 5) * (cw + 10)
+        yy0 = cy + (i // 5) * (chh + 8)
+        snap = (len(OBSTACLES), len(H_CHECKS), len(OVERFLOWS))
+        tmp = Image.new("RGB", (110, 86), PAPER)
+        td = ImageDraw.Draw(tmp)
         TAG[0] = ("card", i)
-        CARD_SCENES[i](d, x + 1, yy0 + 1, 110, chh // 2 - 2)
+        CARD_SCENES[i](td, 0, 0, 110, 86)
         TAG[0] = None
-        flag(d, CARD_FLAGS[i], x + 156, yy0 + 3, w=28, h=18)
-        FLAGS.append(((x + 156, yy0 + 3, x + 184, yy0 + 21),
+        del OBSTACLES[snap[0]:]
+        del H_CHECKS[snap[1]:]
+        del OVERFLOWS[snap[2]:]
+        big_img = tmp.resize((192, 150), Image.LANCZOS)
+        img.paste(big_img.crop((0, CROPS[i], 192, CROPS[i] + 42)),
+                  (x + 1, yy0 + 1))
+        d.rounded_rectangle([x, yy0, x + cw, yy0 + 43], radius=4,
+                            outline=(120, 112, 96), width=1)
+        flag(d, CARD_FLAGS[i], x + 5, yy0 + 5, w=24, h=16)
+        FLAGS.append(((x + 5, yy0 + 5, x + 29, yy0 + 21),
                       f"card{i+4} flag", ("card", i)))
-        tx = x + 116
-        d.rectangle([tx, yy0 + 3, tx + 16, yy0 + 17],
-                    fill=REGIONS[region][1])
-        tnum = str(i + 4)
-        d.text((tx + 8 - d.textlength(tnum, font=SANS_B(11)) / 2, yy0 + 4),
-               tnum, font=SANS_B(11), fill=(255, 255, 255))
-        d.text((tx, yy0 + 23), place, font=SANS_B(10),
-               fill=REGIONS[region][1])
-        check_h(f"card{i+4} place", place, SANS_B(10), tx, x + chw - 4)
-        d.text((tx, yy0 + 38), src, font=SANS(9), fill=MUTE)
-        d.text((tx, yy0 + 50), SURE_LABEL[sure], font=SANS(9), fill=MUTE)
-        check_h(f"card{i+4} src", src, SANS(9), tx, x + chw - 4)
-        text_block(d, x + 6, yy0 + 94, head, SERIF(20), INK, chw - 12, 23,
+        scol = SURE_COLORS[sure]
+        ct = SURE_LABEL[sure]
+        cwid = d.textlength(ct, font=SANS_B(9)) + 10
+        d.rounded_rectangle([x + cw - cwid - 4, yy0 + 4, x + cw - 4,
+                             yy0 + 19], radius=3, fill=(255, 253, 246),
+                            outline=scol, width=1)
+        d.text((x + cw - cwid + 1, yy0 + 7), ct, font=SANS_B(9),
+               fill=scol)
+        ov = OVERLAYS[i]
+        ow = d.textlength(ov, font=SANS_B(19))
+        d.text((x + cw - ow - 6, yy0 + 20), ov, font=SANS_B(19),
+               fill=(16, 20, 34), stroke_width=2,
+               stroke_fill=(255, 253, 246))
+        col = REGIONS[region][1]
+        d.ellipse([x + 1, yy0 + 48, x + 17, yy0 + 64], fill=col)
+        num = str(i + 4)
+        nw = d.textlength(num, font=SANS_B(11))
+        d.text((x + 9 - nw / 2, yy0 + 50), num, font=SANS_B(11),
+               fill=(255, 255, 255))
+        d.text((x + 22, yy0 + 49), place, font=SANS_B(12), fill=col)
+        check_h(f"card{i+4} kicker", place, SANS_B(12), x + 22,
+                x + cw - 4)
+        text_block(d, x, yy0 + 66, head, SERIF(19), INK, cw - 4, 22,
                    max_lines=2, tag=f"card{i}")
-        text_block(d, x + 6, yy0 + 146, CARD_DECK[i], SANS(13),
-                   (52, 48, 42), chw - 12, 16, max_lines=2,
-                   tag=f"carddeck{i}")
-    by = cy + 2 * chh + 2
+        text_block(d, x, yy0 + 115, CARD_DECK[i], SANS(12), (52, 48, 42),
+                   cw - 4, 15, max_lines=2, tag=f"carddeck{i}")
 
-    # -------------------------------------- ALSO rail (left) + map (right)
-    sec_y = by
-    d.rectangle([16, sec_y, 644, sec_y + 16], fill=NAVY)
-    d.text((22, sec_y + 2), f"ALSO ON SUNDAY 22 NOVEMBER — {len(ALSO)} MORE",
-           font=SANS_B(12), fill=(255, 255, 255))
-    colw = (644 - 16 - 8) // 2
-    for i, (place, region, field, fact, src) in enumerate(ALSO):
-        col = i % 2
-        row = i // 2
-        x = 16 + col * (colw + 8)
-        yy = sec_y + 17 + row * 17
-        d.rectangle([x, yy + 4, x + 7, yy + 11], fill=REGIONS[region][1])
-        head = f"{i + 14} {place} — "
-        d.text((x + 11, yy), head, font=SANS_B(14),
-               fill=REGIONS[region][1])
-        px = x + 15 + d.textlength(head, font=SANS_B(14))
-        tail = f"{fact} · {src}"
-        if px + d.textlength(tail, font=SANS(14)) > x + colw:
-            OVERFLOWS.append(f"also{i} too wide: {place} {fact[:30]}")
-        d.text((px, yy), tail, font=SANS(14), fill=INK)
-
-    # map panel: pins carry the story numbers of heroes (1-3) and cards (4-15)
-    mx0, my0, mx1 = 656, sec_y, 1008
-    d.rectangle([mx0, my0, mx1, sec_y + 16], fill=NAVY)
-    d.text((mx0 + 8, my0 + 2), "WHERE IT HAPPENED — PIN = STORY NUMBER",
-           font=SANS_B(12), fill=(255, 255, 255))
-    check_h("map header", "WHERE IT HAPPENED — PIN = STORY NUMBER",
-            SANS_B(12), mx0 + 8, mx1 - 8)
-    check_h("also header", f"ALSO ON SUNDAY 22 NOVEMBER — {len(ALSO)} MORE",
-            SANS_B(12), 22, 644 - 8)
-    map_y, map_h, map_w = sec_y + 22, 162, mx1 - mx0 - 16
-    map_x = mx0 + 8
-    d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h], fill=(16, 26, 44))
-    cw, chh2 = map_w / 68, map_h / 30
+    # -------------------------------- bottom: map left, ALSO right
+    by0 = 712
+    d.line([MX, by0, RX, by0], fill=INK, width=2)
+    LINES.append(((MX, by0, RX, by0), "bottom rule"))
+    d.text((MX, by0 + 8), "WHERE IT HAPPENED", font=SANS_B(14), fill=RED)
+    ax = 276
+    also_head = "ALSO ON SUNDAY 22 NOVEMBER"
+    d.text((ax, by0 + 8), also_head, font=SANS_B(14), fill=RED)
+    check_h("also header", also_head, SANS_B(14), ax, RX)
+    map_x, map_y, map_w, map_h = MX, by0 + 26, 240, 118
+    d.rectangle([map_x, map_y, map_x + map_w, map_y + map_h],
+                fill=(16, 26, 44))
+    LINES.append(((map_x, map_y, map_x + map_w, map_y), "map top"))
+    LINES.append(((map_x, map_y + map_h, map_x + map_w, map_y + map_h),
+                  "map bottom"))
+    cw2, chh2 = map_w / 68, map_h / 30
     for r, spans in enumerate(LAND_SPANS):
         for c0, c1 in spans:
             for c in range(c0, c1 + 1):
-                cx = map_x + (c + 0.5) * cw
+                cx = map_x + (c + 0.5) * cw2
                 cy2 = map_y + (r + 0.5) * chh2
                 d.ellipse([cx - 1.6, cy2 - 1.6, cx + 1.6, cy2 + 1.6],
                           fill=(120, 150, 190))
-    for num, lon, lat, dx, dy in PINS:
+    for (num, lon, lat, dx, dy) in PINS:
         tx = map_x + (lon + 168) / 360 * map_w
-        ty = map_y + (78 - lat) / 134 * map_h
+        tyy = map_y + (78 - lat) / 134 * map_h
         if dx or dy:
-            d.ellipse([tx - 2, ty - 2, tx + 2, ty + 2], fill=(255, 214, 90))
-            d.line([tx, ty, tx + dx, ty + dy], fill=(255, 214, 90), width=1)
-        px2, py2 = tx + dx, ty + dy
-        d.ellipse([px2 - 11, py2 - 11, px2 + 11, py2 + 11], fill=RED,
-                  outline=(255, 255, 255), width=2)
-        t = str(num)
-        d.text((px2 - d.textlength(t, font=SANS_B(12)) / 2, py2 - 7), t,
-               font=SANS_B(12), fill=(255, 255, 255))
-    cap_y = map_y + map_h + 6
-    d.text((mx0 + 8, cap_y), "11 MERCURY — OFF THE MAP, IN SPACE", font=SANS_B(11), fill=MUTE)
-    check_h("map caption", "11 MERCURY — OFF THE MAP, IN SPACE", SANS_B(11), mx0 + 8, mx1 - 8)
-    by = sec_y + 206
+            d.ellipse([tx - 2, tyy - 2, tx + 2, tyy + 2],
+                      fill=(255, 214, 90))
+            d.line([tx, tyy, tx + dx, tyy + dy], fill=(255, 214, 90),
+                   width=1)
+        px2, py2 = tx + dx, tyy + dy
+        col = REGIONS[stories[num - 1][1]][1]
+        d.ellipse([px2 - 9, py2 - 9, px2 + 9, py2 + 9], fill=col,
+                  outline=(255, 255, 255), width=1)
+        ns = str(num)
+        nw = d.textlength(ns, font=SANS_B(10))
+        d.text((px2 - nw / 2, py2 - 6), ns, font=SANS_B(10),
+               fill=(255, 255, 255))
+    leg_names = {"EUR": "Europe", "ASI": "Asia-Pacific",
+                 "AME": "Americas", "MEA": "Middle East",
+                 "AFR": "Africa", "GLO": "Space"}
+    for j, code in enumerate(("EUR", "ASI", "AME", "MEA", "AFR", "GLO")):
+        lx = MX + (j % 2) * 122
+        ly = map_y + map_h + 12 + (j // 2) * 17
+        d.ellipse([lx, ly + 2, lx + 9, ly + 11], fill=REGIONS[code][1])
+        d.text((lx + 14, ly), f"{leg_names[code]} {reg_counts[code]}",
+               font=SANS(12), fill=INK)
+    colw2 = (RX - ax - 16) // 2
+    for i, (place, region, field, fact, src) in enumerate(ALSO):
+        col_i, row = divmod(i, 11)
+        x = ax + col_i * (colw2 + 16)
+        yy = by0 + 26 + row * 17
+        colr = REGIONS[region][1]
+        d.ellipse([x, yy, x + 17, yy + 17], fill=colr)
+        num = str(i + 14)
+        nw = d.textlength(num, font=SANS_B(11))
+        d.text((x + 8.5 - nw / 2, yy + 2), num, font=SANS_B(11),
+               fill=(255, 255, 255))
+        head = f"{place}: "
+        d.text((x + 22, yy + 1), head, font=SANS_B(14), fill=colr)
+        hw2 = d.textlength(head, font=SANS_B(14))
+        tail = f"{fact} \u00b7 {src}"
+        d.text((x + 22 + hw2 + 6, yy + 1), tail, font=SANS(14), fill=INK)
+        check_h(f"also{i+14}", head + tail, SANS(14), x + 22,
+                x + colw2 - 2)
 
-    # ------------------------------------------------- numbers + bars
-    d.line([16, by, W - 16, by], fill=INK, width=2)
-    LINES.append(((16, by, W - 16, by), "numbers rule"))
-    d.text((16, by + 5), "THE DAY IN NUMBERS", font=SANS_B(12), fill=RED)
-    nx = 172
-    for num, lab in NUMBERS:
-        d.text((nx, by + 0), num, font=SERIF_BLACK(20), fill=INK)
-        lx = nx + d.textlength(num, font=SERIF_BLACK(20)) + 6
-        d.text((lx, by + 8), lab, font=SANS(9), fill=MUTE)
-        check_h(f"numbers label '{lab}'", lab, SANS(9), lx, nx + 139)
-        nx += 141
-    by += 29
-    d.text((16, by + 0), "REGIONS", font=SANS_B(10), fill=MUTE)
-    tally_bar(d, by, reg_counts, total, x0=76, x1=560, hgt=11)
-    d.text((576, by + 0), "FIELDS", font=SANS_B(10), fill=MUTE)
-    top_fields = sorted(field_counts.items(), key=lambda kv: -kv[1])[:5]
-    fx = 632
-    for name, n in top_fields:
-        d.text((fx, by + 0), f"{name} {n}", font=SANS_B(10), fill=INK)
-        fx += d.textlength(f"{name} {n}", font=SANS_B(10)) + 10
-    by += 13
+    # -------------------------------- DATE CHECK box (red frame + tab)
+    dy = 927
+    d.rectangle([MX, dy, RX, dy + 56], fill=(253, 240, 238),
+                outline=RED, width=2)
+    LINES.append(((MX, dy, RX, dy), "datecheck top"))
+    LINES.append(((MX, dy + 56, RX, dy + 56), "datecheck bottom"))
+    d.rectangle([MX + 6, dy + 18, MX + 112, dy + 38], fill=RED)
+    tw = d.textlength("DATE CHECK", font=SANS_B(12))
+    d.text((MX + 59 - tw / 2, dy + 21), "DATE CHECK", font=SANS_B(12),
+           fill=(255, 255, 255))
+    dc = ("Left out on purpose, first reported before Sunday: Shenzhen "
+          "summit and the ICJ Myanmar ruling (Thu 19); Nasdaq -"
+          + FIG["nasdaq_friday"] + " close, the Bayer "
+          + FIG["bayer_settlement"] + " settlement and Phumzile "
+          "Mlambo-Ngcuka dies at " + FIG["mlambo_age"] + " (Fri 20); "
+          "EU\u2013Indonesia deal, Geneva robot talks, the BepiColombo "
+          "burn (confirmed Sun) and the Kryvyi Rih strike, toll set Sun "
+          "(Sat 21). Not yet: a resumed COP32 date; Cikande's final "
+          "toll; Benghazi's casualty count; whether the Kharg convoy "
+          "sails.")
+    text_block(d, MX + 122, dy + 6, dc, SANS(12), (52, 48, 42),
+               RX - MX - 130, 15, max_lines=3, tag="datecheck")
 
-    # ------------------------------------------------- date check + not yet
-    dc = ("DATE CHECK — NOT 22 NOV, LEFT OUT: Thu 19 — Shenzhen summit, ICJ Myanmar "
-          "ruling · Fri 20 — Nasdaq -5.3% close, Bayer $7.25bn approval, "
-          "Mlambo-Ngcuka dies at 71 · Sat 21 — EU-Indonesia deal, Geneva robot "
-          "talks end, BepiColombo burn (confirmed Sun), Kryvyi Rih strike (toll Sun).")
-    yy = text_block(d, 16, by, dc, SANS_SB(11), (70, 64, 54), W - 32, 14,
-                    max_lines=2, tag="datecheck")
-    ny = ("NOT YET KNOWN SUNDAY NIGHT: A resumed COP32 date · Cikande's final toll "
-          "· Benghazi's casualty count · whether the Kharg convoy sails.")
-    text_block(d, 16, yy + 2, ny, SANS_SB(11), RED, W - 32, 12,
-               max_lines=1, tag="notyet")
+    # -------------------------------- footer: attribution + HOW SURE
+    fy = 992
+    left = ("Every story happened or was first reported on Sun 22 Nov "
+            "2026; claims attributed.")
+    d.text((MX, fy), left, font=SANS(11), fill=(52, 48, 42))
+    srcs = []
+    for s in [h[5] for h in HEROES] + [c[5] for c in CARDS] \
+            + [b[4] for b in ALSO]:
+        if s not in srcs:
+            srcs.append(s)
+    src_line = ("Sources: " + ", ".join(srcs[:5]) + f" + {len(srcs) - 5} "
+                "more \u00b7 Original drawings")
+    sw = d.textlength(src_line, font=SANS(11))
+    d.text((RX - sw, fy), src_line, font=SANS(11), fill=(52, 48, 42))
+    check_h("footer left", left, SANS(11), MX, RX - sw - 8)
+    seg = [("HOW SURE:  ", SANS_B(11), INK),
+           ("CONFIRMED", SANS_B(11), SURE_COLORS["C"]),
+           (" 2+ outlets \u00b7 ", SANS(11), INK),
+           ("OFFICIAL", SANS_B(11), SURE_COLORS["W"]),
+           (" on the record \u00b7 ", SANS(11), INK),
+           ("REPORTED", SANS_B(11), SURE_COLORS["R"]),
+           (" one outlet", SANS(11), INK)]
+    xx = MX
+    for txt_s, fnt, fl in seg:
+        d.text((xx, fy + 15), txt_s, font=fnt, fill=fl)
+        bb = d.textbbox((0, 0), txt_s, font=fnt)
+        xx += (bb[2] - bb[0]) + 5
 
     print(f"H-CHECKS: {len(H_CHECKS)} measured, "
           f"{sum(1 for _, v in H_CHECKS if v > 0)} over limit")
