@@ -32,6 +32,50 @@ the HOW SURE legend and sources line. The story set is locked at
 exactly 35 (3 heroes + 10 cards + 22 ALSO briefs); all overlap
 audits, the figures registry check and the 300px gate run clean.
 
+## How the page is composed
+
+The canvas is read top to bottom the way a newspaper front page is:
+a strap first, then the date, then the day itself. The strap carries
+no hand-typed counts — the story total, the region tally and the
+field tally are all computed from the same story table the panels
+draw from, so the arithmetic on the page can never disagree with the
+page itself. Under the date, a timeline bar places the day's turning
+points in UTC, because the stories span every timezone and the page
+needs one honest clock.
+
+The three heroes are the day's heaviest stories, each with a drawn
+scene, a red statement band inside the scene carrying the fact that
+matters most, and a deck underneath. The ten cards are built for the
+small-size glance: every card's picture strip is a single pictogram
+drawn natively at strip size — a drone, three missiles, a megaphone,
+a burning factory, a capsized hull, a burning house, an explosion, a
+space probe, a racing car, a rising chart — so the topic reads from
+the symbol alone before any word is decoded. The ALSO rail then takes
+the density: twenty-two one-line briefs, each with its place, its
+one-line fact and its source tag, for the reader who wants the whole
+day rather than the headlines.
+
+The map is a dot grid, not a coastline tracing: land is a table of
+rows in the source, one character per cell, and the numbered pins sit
+on the stories that have a place. Beside it the DATE CHECK box does
+the page's honesty work in public — it names the famous events that
+were checked against the date and excluded because they belong to
+another day, and it prints a NOT YET KNOWN line for what Sunday had
+not yet decided when the page closed.
+
+## Checking the page
+
+`draw.py` audits itself as it draws. Every text box is recorded, and
+at the end three audits run: no two text boxes may intersect or come
+within a hair of each other; no rule or frame line may pass through
+text; and no text or flag may sit on top of scene graphics it would
+fight with. A separate registry check walks the finished source and
+confirms that every number on the page is the registry's display for
+that figure, that no superseded value survives anywhere — not even in
+a comment — and that the tallies a reader can recount by hand (the
+strap, the legend, the pins) match the story table. The build is
+deterministic: run it twice and the bytes are identical.
+
 ## License
 
 MIT — see `LICENSE`. Fonts are Playfair Display and Archivo, both under

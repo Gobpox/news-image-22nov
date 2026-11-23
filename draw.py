@@ -19,6 +19,43 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+# ------------------------------------------------------------------
+# Design notes for whoever maintains this page next.
+#
+# One table drives everything. HEROES, CARDS and the ALSO rail are
+# the only places story data lives; the strap counts, the region
+# tally, the field tally and the source line are all computed from
+# them at draw time. If a count on the page could be typed by hand,
+# it eventually would be typed wrong, so none of them are.
+#
+# One registry drives every number. figures.json holds each figure
+# once, with the exact display string the page must print. Panels
+# interpolate the display; they never format a raw value themselves.
+# The registry check outside this file fails the build when a stale
+# value survives anywhere in the source, comments included.
+#
+# Geometry was settled before stories were counted. The type floors
+# and the zone grid come first; the story set is then fitted to the
+# space that exists, never the other way round. When a story does
+# not fit at a readable size, the rail takes it or it is cut.
+#
+# Scenes are drawn, not decorated. Every pictured panel carries one
+# dominant subject at the size the panel is actually viewed at, with
+# its key fact lettered inside the scene on a band. A scene that
+# needs its headline to be understood has failed; the pictogram
+# strips on the cards are the strictest form of the same rule.
+#
+# The page audits itself. Text boxes, rule lines and scene graphics
+# are recorded as they are drawn, and the audits at the end of the
+# run fail on any intersection, any line through text, and any text
+# sitting on graphics it would fight with. Nothing ships on a
+# warning: an audit line that is not clean stops the build.
+#
+# Determinism is a feature. There is no randomness and no clock in
+# the drawing path; two runs produce the same bytes, which is what
+# makes a one-pixel regression visible instead of arguable.
+# ------------------------------------------------------------------
+
 W, H = 1024, 1024
 HERE = Path(__file__).resolve().parent
 FONT_DIR = HERE / "fonts"
@@ -189,12 +226,23 @@ assert all(len(row) == 68 for row in LAND_MAP) and len(LAND_MAP) == 30
 
 # Pins for the numbered stories (heroes 1-3, cards 4-15): (num, lon, lat,
 # dx, dy) — dx/dy nudge cluster pins apart, with a leader dot left behind.
-PINS = [
-    (1, 31, 37, 16, 20), (2, 50, 26, 30, 36), (3, 20, 32, -30, -14),
-    (4, 30, 50, 30, -6), (5, 21, 52, -28, -10), (6, 29, 41, -30, 18),
-    (7, 106, -6, 0, 0), (8, 6, 5, -40, 30), (9, 35, 32, -24, 30),
-    (10, 34, 31, 24, 34), (12, -115, 36, 0, 0), (13, 121, 31, 0, 0),
-]
+# The pins are kept as a text block too: story number, longitude,
+# latitude, then the nudge offsets that pull clustered pins apart.
+PINS_TEXT = """1 | 31 | 37 | 16 | 20
+2 | 50 | 26 | 30 | 36
+3 | 20 | 32 | -30 | -14
+4 | 30 | 50 | 30 | -6
+5 | 21 | 52 | -28 | -10
+6 | 29 | 41 | -30 | 18
+7 | 106 | -6 | 0 | 0
+8 | 6 | 5 | -40 | 30
+9 | 35 | 32 | -24 | 30
+10 | 34 | 31 | 24 | 34
+12 | -115 | 36 | 0 | 0
+13 | 121 | 31 | 0 | 0"""
+
+PINS = [tuple(int(_v) for _v in _row.split(" | "))
+        for _row in PINS_TEXT.strip().splitlines()]
 
 # The day in UTC, kept as a text block: the hour first, then a caption.
 TIMELINE_TEXT = """00:56 | Bepi in orbit
@@ -208,12 +256,7 @@ TIMELINE_TEXT = """00:56 | Bepi in orbit
 TIMELINE = [tuple(_row.split(" | "))
             for _row in TIMELINE_TEXT.strip().splitlines()]
 
-NUMBERS = [(FIG["cop31_overtime"], "hours of overtime"),
-           (FIG["cop31_last_nodeal"], "last no-deal COP"),
-           (FIG["bayelsa_dead"], "dead in Bayelsa"),
-           (FIG["kryvyi_injured"], "hurt in Kryvyi Rih"),
-           (FIG["ukraine_killed_sunday"], "killed in Ukraine Sun"),
-           (FIG["vegas_lead_changes"], "lead changes in Vegas")]
+
 
 
 def all_stories():
@@ -412,6 +455,21 @@ def flag(d, code, x, y, w=34, h=22):
     serves the 34x22 hero chips and the 28x18 card chips."""
     WHT = (255, 255, 255)
     d.rectangle([x, y, x + w, y + h], fill=WHT)
+    if code in STRIPE_FLAGS:
+        # Plain banded flags come from the table under the function.
+        # Each entry is one painted rectangle, in painting order, as
+        # (axis, start, parts, stop, colour): along its axis the rect
+        # runs from start/parts to stop/parts of the flag's extent,
+        # exactly the integer arithmetic the hand-drawn branches used.
+        for axis, start, parts, stop, col in STRIPE_FLAGS[code]:
+            if axis == "h":
+                d.rectangle([x, y + start * h // parts, x + w,
+                             y + stop * h // parts], fill=col)
+            else:
+                d.rectangle([x + start * w // parts, y,
+                             x + stop * w // parts, y + h], fill=col)
+        d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
+        return
     if code == "SA":  # Saudi Arabia: green, white shahada band + sword
         d.rectangle([x, y, x + w, y + h], fill=(0, 108, 53))
         d.rectangle([x + w * 0.16, y + h * 0.30, x + w * 0.84, y + h * 0.52],
@@ -446,24 +504,11 @@ def flag(d, code, x, y, w=34, h=22):
         d.ellipse([cx + r * 0.3 - r2, cy - r2, cx + r * 0.3 + r2, cy + r2],
                   fill=(0, 0, 0))
         _star(d, x + w * 0.64, cy, h * 0.10, WHT)
-    elif code == "UA":  # Ukraine: blue over yellow
-        d.rectangle([x, y + h // 2, x + w, y + h], fill=(255, 213, 0))
-        d.rectangle([x, y, x + w, y + h // 2], fill=(0, 91, 187))
-    elif code == "ID":  # Indonesia: red over white
-        d.rectangle([x, y, x + w, y + h // 2], fill=(206, 17, 38))
-    elif code == "NG":  # Nigeria: green-white-green vertical
-        d.rectangle([x, y, x + w // 3, y + h], fill=(0, 135, 81))
-        d.rectangle([x + 2 * w // 3, y, x + w, y + h], fill=(0, 135, 81))
     elif code == "CN":  # China: red, gold stars
         d.rectangle([x, y, x + w, y + h], fill=(222, 41, 16))
         _star(d, x + w * 0.24, y + h * 0.28, h * 0.20, (255, 222, 0))
         for sx, sy in ((0.50, 0.14), (0.60, 0.30), (0.60, 0.52), (0.48, 0.62)):
             _star(d, x + w * sx, y + h * sy, h * 0.08, (255, 222, 0))
-    elif code == "PE":  # Peru: red-white-red vertical
-        d.rectangle([x, y, x + w // 3, y + h], fill=(217, 0, 27))
-        d.rectangle([x + 2 * w // 3, y, x + w, y + h], fill=(217, 0, 27))
-    elif code == "PL":  # Poland: white over red
-        d.rectangle([x, y + h // 2, x + w, y + h], fill=(220, 20, 60))
     elif code == "DK":  # Denmark: red, white Nordic cross
         d.rectangle([x, y, x + w, y + h], fill=(200, 16, 46))
         d.rectangle([x + w * 0.30, y, x + w * 0.43, y + h], fill=WHT)
@@ -513,9 +558,6 @@ def flag(d, code, x, y, w=34, h=22):
         d.rectangle([x + 2 * w // 3, y, x + w, y + h], fill=(206, 17, 38))
         d.ellipse([x + w * 0.44, y + h * 0.38, x + w * 0.56, y + h * 0.62],
                   fill=(196, 148, 38))
-    elif code == "IT":  # Italy: green-white-red vertical
-        d.rectangle([x, y, x + w // 3, y + h], fill=(0, 140, 69))
-        d.rectangle([x + 2 * w // 3, y, x + w, y + h], fill=(205, 33, 42))
     elif code == "EU":  # European Union: blue, circle of 12 gold stars
         import math
         d.rectangle([x, y, x + w, y + h], fill=(0, 51, 153))
@@ -527,6 +569,21 @@ def flag(d, code, x, y, w=34, h=22):
     else:  # globe marker
         d.ellipse([x + 6, y + 1, x + 28, y + 21], fill=SKY, outline=INK)
     d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
+
+
+# Plain banded flags, drawn by the table path in flag(). Each flag is
+# a list of painted rectangles over the white base, in painting order;
+# a rectangle is (axis, start, parts, stop, colour), running along its
+# axis from start/parts to stop/parts of the flag's extent. Flags with
+# emblems, crosses or charges stay in the hand-drawn branches above.
+STRIPE_FLAGS = {
+    "UA": [("h", 1, 2, 2, (255, 213, 0)), ("h", 0, 2, 1, (0, 91, 187))],
+    "ID": [("h", 0, 2, 1, (206, 17, 38))],
+    "PL": [("h", 1, 2, 2, (220, 20, 60))],
+    "NG": [("v", 0, 3, 1, (0, 135, 81)), ("v", 2, 3, 3, (0, 135, 81))],
+    "PE": [("v", 0, 3, 1, (217, 0, 27)), ("v", 2, 3, 3, (217, 0, 27))],
+    "IT": [("v", 0, 3, 1, (0, 140, 69)), ("v", 2, 3, 3, (205, 33, 42))],
+}
 
 
 CARD_DECK = [
